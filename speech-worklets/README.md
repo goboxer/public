@@ -1,8 +1,13 @@
-# Speech to text via Audio Worklets
+# Speech to Text via Audio Worklets
 
 This example exists because web browsers do not support the audio formats required by Google's Cloud Speech-to-Text API, see [Troubleshooting](https://cloud.google.com/speech-to-text/docs/support). However using [Audio Worklets](https://developers.google.com/web/updates/2017/12/audio-worklet) it is possible to take the raw audio PCM (Pulse-code modulation) buffer and convert this into a supported format. 
 
 This example demonstrates client side PCM (Pulse-code modulation) audio recording with transcoding to FLAC (Free Lossless Audio Codec) and transcribing with Google's Cloud Speech-to-Text API.
+
+## Usage
+
+You will need to add your Google API key to the variable GOOGLE_API_KEY in index.html for transcription to work.
+This example has been tested on Chrome.
 
 ## Credits
 

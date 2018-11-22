@@ -1,4 +1,4 @@
-# Speech to text via Audio ScriptProcessorNode
+# Speech to Text via Audio ScriptProcessorNode
 
 An extension to [Recorder.js from Matt Diamond](https://github.com/mattdiamond/Recorderjs) which demonstrates transcribing recordings using Google's Cloud Speech-to-Text API.
 
@@ -9,7 +9,8 @@ This example demonstrates client side PCM (Pulse-code modulation) audio recordin
 
 ## Usage
 
-You will need to add your Google API key to the variable GOOGLE_API_KEY in index.html for transcription to work.
+You will need to add your Google API key to the file 'env.js' for transcription to work.
+This example has been tested on Chrome and Firefox.
 
 ## Credits
 
