@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Live input record and playback</title>
+  <style type='text/css'>
+    ul { list-style: none; }
+    #recordingslist audio { display: block; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <h1>Recorder.js simple WAV export example</h1>
+
+  <p>Make sure you are using a recent version of Google Chrome.</p>
+  <p>Also before you enable microphone input either plug in headphones or turn the volume down if you want to avoid ear splitting feedback!</p>
+
+  <button id="start_record" onclick="startRecording(this);">record</button>
+  <button id="stop_record" onclick="stopRecording(this);" disabled>stop with files</button>
+  <button id="stop_record_and_transcribe" onclick="stopRecordingWithTranscript(this);" disabled>stop with transcript</button>
+  
+  <h2>Recordings</h2>
+  <ul id="recordingslist"></ul>
+  
+  <h2>Log</h2>
+  <pre id="log"></pre>
+
+  <script>
+  function __log(e, data) {
+    log.innerHTML += "\n" + e + " " + (data || '');
+  }
+
+  var audio_context;
+  var recorder;
+
+  function startUserMedia(stream) {
+    audio_context.resume().then(() => {
+        __log('Playback resumed successfully');
+
+        var input = audio_context.createMediaStreamSource(stream);
+        __log('Media stream created.');
+
+        // Uncomment if you want the audio to feedback directly
+        // input.connect(audio_context.destination);
+        // __log('Input connected to audio context destination.');
+        
+        recorder = new Recorder(input, {
+                numChannels: 1
+            });
+        __log('Recorder initialised.');
+    });
+  }
+
+  function startRecording(button) {
+    recorder && recorder.record();
+    button.disabled = true;
+    //button.nextElementSibling.disabled = false;
+    document.getElementById("stop_record").disabled = false;
+    document.getElementById("stop_record_and_transcribe").disabled = false;
+    __log('Recording...');
+  }
+
+  function stopRecording(button) {
+    recorder && recorder.stop();
+    //button.disabled = true;
+    //button.previousElementSibling.disabled = false;
+    document.getElementById("stop_record").disabled = true;
+    document.getElementById("stop_record_and_transcribe").disabled = true;
+    document.getElementById("start_record").disabled = false;
+    __log('Stopped recording.');
+    
+    // create WAV download link using audio data blob
+    createDownloadLink();
+    
+    recorder.clear();
+  }
+
+  function stopRecordingWithTranscript(button) {
+    recorder && recorder.stop();
+    //button.disabled = true;
+    //button.previousElementSibling.disabled = false;
+    document.getElementById("stop_record").disabled = true;
+    document.getElementById("stop_record_and_transcribe").disabled = true;
+    document.getElementById("start_record").disabled = false;
+    __log('Stopped recording.');
+    
+    createTranscript();
+    
+    recorder.clear();
+  }
+
+  function createDownloadLink() {
+    recorder && recorder.exportWAV(function(blob) {
+      console.log('blob: ', blob);
+
+      var url = URL.createObjectURL(blob);
+      var li = document.createElement('li');
+      var au = document.createElement('audio');
+      var hf = document.createElement('a');
+      
+      au.controls = true;
+      au.src = url;
+      hf.href = url;
+      hf.download = new Date().toISOString() + '.wav';
+      hf.innerHTML = hf.download;
+      li.appendChild(au);
+      li.appendChild(hf);
+      recordingslist.appendChild(li);
+
+      var fileReader = new FileReader();
+      fileReader.onload = function(event) {
+          arrayBuffer = event.target.result;
+          var encData = [];
+          var result = encodeFlac(arrayBuffer, encData, false);
+          console.log('encoded data array: ', encData);
+          //console.log('b64 encoded data array: ', btoa(encData));
+
+          var url = URL.createObjectURL(new Blob(encData, {type: "audio/flac"}));
+          var li = document.createElement('li');
+          var au = document.createElement('audio');
+          var hf = document.createElement('a');
+          
+          au.controls = true;
+          au.src = url;
+          hf.href = url;
+          hf.download = new Date().toISOString() + '.flac';
+          hf.innerHTML = hf.download;
+          li.appendChild(au);
+          li.appendChild(hf);
+          recordingslist.appendChild(li);
+
+      };
+      fileReader.readAsArrayBuffer(blob);
+    });
+  }
+
+  function createTranscript() {
+    recorder && recorder.exportWAV(function(blob) {
+      console.log('blob: ', blob);
+
+      var fileReader = new FileReader();
+      fileReader.onload = function(event) {
+        arrayBuffer = event.target.result;
+        var encData = [];
+        var result = encodeFlac(arrayBuffer, encData, false);
+        console.log('encoded data array: ', encData);
+
+        var base64Reader = new FileReader();
+        base64Reader.onload = function() {
+          base64data = base64Reader.result;
+
+          // Will need to strip the prefix 'data:audio/flac;base64,'
+          // -> data:audio/flac;base64,ZkxhQwAAACIQABAA...
+          console.log(base64data);
+
+          let encoded = base64data.replace(/^data:(.*;base64,)?/, '');
+          if ((encoded.length % 4) > 0) {
+            encoded += '='.repeat(4 - (encoded.length % 4));
+          }
+
+          var start = new Date();
+          fetch(`https://speech.googleapis.com/v1/speech:recognize?key=GOOGLE_API_KEY`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json; charset=utf-8"
+            },
+            redirect: "follow", // manual, *follow, error
+            //referrer: "no-referrer", // no-referrer, *client
+            body: JSON.stringify({
+              config: {
+                encoding: "FLAC",
+                sampleRateHertz: 48000,
+                languageCode: "en"
+              },
+              audio: {
+                content: encoded
+              }
+            }),
+          })
+          .then(response => {
+            if (response.ok) {
+              console.log("Success");
+            } else {
+              console.log("Failure");
+            }
+            return response.json()
+          })
+          .then(data => {
+            var end = new Date();
+            var diff = (end - start) / 1000;
+            console.log("Speech request latency in seconds", diff);
+            console.log("Data", JSON.stringify(data));
+          })
+          .catch(err => {
+            console.log("Network error encountered", err);
+          });
+        }
+        base64Reader.readAsDataURL(new Blob(encData, {type: "audio/flac"})); 
+
+      };
+      fileReader.readAsArrayBuffer(blob);
+    });
+  }
+
+  window.onload = function init() {
+    try {
+      // webkit shim
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
+      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+      window.URL = window.URL || window.webkitURL;
+      
+      audio_context = new AudioContext;
+      __log('Audio context set up.');
+      __log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
+    } catch (e) {
+      alert('No web audio support in this browser!');
+    }
+    
+    navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+      __log('No live audio input: ' + e);
+    });
+  };
+  </script>
+
+<script src="./lib/libflac/libflac4-1.3.2.js"></script>
+<script src="./lib/libflac/util/data-util.js" type="text/javascript"></script>
+<script src="./lib/libflac/encode-func.js" type="text/javascript"></script>
+<script src="./lib/recorder.js"></script>
+</body>
+</html>

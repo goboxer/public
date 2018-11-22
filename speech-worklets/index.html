@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link type="text/css" href="/styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU"
+        crossorigin="anonymous">
+</head>
+
+<body onload="init()">
+    <div class="inner">
+
+        <p>This is an example of using the <a href="https://www.w3.org/TR/webaudio/#audioworklet" target="_blank">Web
+                Audio
+                API Audio Worklets</a> to record speech to a wav file and to use the <a href="https://cloud.google.com/speech-to-text/docs/"
+                target="_blank">Google speech-to-text api</a> to translate the audio into text.</p>
+
+        <h4>Audio output options</h2>
+            <input type="checkbox" name="output" value="file"> wav file(s)<br>
+            <input type="checkbox" name="output" value="transcript" checked> google translate<br>
+
+            <div id="api_key" class="hidden">
+                Please provide your google api key (we don't store this)
+                <input id="input_api_key" type="text" onpaste="updateAPIKey(this)" onkeyup="updateAPIKey(this)">
+            </div>
+
+            <textarea rows="15" cols="80" id="transcript"></textarea>
+            <div id="confidence"></div>
+
+            <div id="list"></div>
+        
+            <div class="credits">
+                <h4>Credits</h4>
+                <p><a href="https://github.com/mattdiamond/Recorderjs" target="_blank">Recorder.js from MAtt Diamond </a> </p>
+                <p><a href="https://github.com/GoogleChromeLabs/web-audio-samples">Google Chrome Labs Samples</a></p> 
+                 <p><a href="https://github.com/mmig/libflac.js">FLAC encoder compiled in JavaScript using emscripten</a></p>
+                <p><a href="https://fontawesome.com/">Font Awesome</a></p>
+            </div>
+        </div>
+ 
+    <div class="bar">
+        <button onclick="record()" id="recording_icon"><i class="fas fa-microphone" title="start recording"></i></button>
+        <button onclick="stop()" class="disabled" id="stop_icon"><i class="fas fa-hand-paper" title="stop recording"></i></button>
+        <button onclick="clearScreen()" id="clear"><i class="fas fa-reply" title="reset"></i></button>
+    </div>
+
+
+    <script type="text/javascript" src="recorder.js"></script>
+    <script type="text/javascript" src="audioNode.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script type="text/javascript" src="/lib/libflac/libflac4-1.3.2.js"></script>
+    <script type="text/javascript" src="/lib/libflac/util/data-util.js"></script>
+    <script type="text/javascript" src="/lib/libflac/encode-func.js"></script>
+    <script type="text/javascript" src="/env.js"></script>
+    <script type="text/javascript" src="/index.js"></script>
+</body>
+
+</html>
