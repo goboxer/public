@@ -25,7 +25,7 @@ This example is mainly pulling together prior art from the following sources:
 ## References
 
 - [Speaking with a Webpage - Streaming speech transcripts](https://codelabs.developers.google.com/codelabs/speaking-with-a-webpage)
-- [Google's Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/support)
+- [Google's Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/)
 - [Web Audio API - ScriptProcessorNode](https://developer.mozilla.org/en-US/docs/Web/API/ScriptProcessorNode)
 - [WAV PCM soundfile format](http://soundfile.sapp.org/doc/WaveFormat/)
 - [Example for client-side encoding microphone audio into FLAC](https://github.com/mmig/speech-to-flac)
