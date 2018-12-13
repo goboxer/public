@@ -13,9 +13,16 @@ log ()
   echo "${SCRIPT_NAME} -> ${1}"
 }
 
+cleanup ()
+{
+  log "Cleaning up..."
+  find . -name "*.tmp.*" | xargs rm -f
+}
+trap cleanup EXIT
+
 cleanup_and_exit_with_code ()
 {
-  find . -name "*.tmp.*" | xargs rm -f
+  cleanup
 
   echo
   log "END `date '+%Y-%m-%d %H:%M:%S'`"
