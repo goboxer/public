@@ -18,4 +18,4 @@ Wrapper script to add support for DML database migrations to [migrate](https://g
 
 ## Contributors
 
-Contributors in alphabetical order are Rick Lee, Ling Liang, Parker Lin, Tom Wang et al.
+Contributors in alphabetical order are Rick Lee, Ling Liang, Parker Lin, Tom Wang, Yixin Zhang et al.
