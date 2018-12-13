@@ -18,7 +18,7 @@ cleanup ()
   log "Cleaning up..."
   find . -name "*.tmp.*" | xargs rm -f
 }
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 
 cleanup_and_exit_with_code ()
 {
@@ -145,12 +145,7 @@ fn_last_migration ()
     LAST_MIGRATION=${TEST_LAST_MIGRATION}
     LAST_MIGRATION=$(echo "${LAST_MIGRATION}" | awk 'END{print $NF}')
   else
-    set +o errexit
 	  LAST_MIGRATION=$(gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="SELECT Version from SchemaMigrations" | awk 'END{print $NF}')
-    if [ $? -ne 0 ]; then
-      set -o errexit
-      cleanup_and_exit_with_code $?
-    fi
   fi
 
 	set +o nounset
@@ -198,12 +193,7 @@ fn_apply_all_ddl ()
   if [ "${TEST_MODE}" == true ]; then
     log "Applying all migrations in test mode..."
   else
-    set +o errexit
     migrate -path . -database spanner://projects/${GCP_PROJECT_ID}/instances/${SPANNER_INSTANCE_ID}/databases/${SPANNER_DATABASE_ID} up
-    if [ $? -ne 0 ]; then
-      set -o errexit
-      cleanup_and_exit_with_code $?
-    fi
   fi
 
   log "LEAVE fn_apply_all_ddl..."
@@ -216,12 +206,7 @@ fn_apply_ddl ()
   if [ "${TEST_MODE}" == true ]; then
     log "Applying DDL migration '${i}' in test mode..."
   else
-    set +o errexit
     migrate -path . -database spanner://projects/${GCP_PROJECT_ID}/instances/${SPANNER_INSTANCE_ID}/databases/${SPANNER_DATABASE_ID} up 1
-    if [ $? -ne 0 ]; then
-      set -o errexit
-      cleanup_and_exit_with_code $?
-    fi
   fi
 
   log "LEAVE fn_apply_ddl..."
@@ -250,12 +235,7 @@ fn_apply_dml ()
         log "  Skipping empty line..."
       else
         log "  Running: ${line}"
-        set +o errexit
         gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="${line}"
-        if [ $? -ne 0 ]; then
-          set -o errexit
-          cleanup_and_exit_with_code $?
-        fi
       fi
     done < "${1}.tmp"
     rm -f "${1}.tmp"
@@ -289,13 +269,7 @@ fn_apply_migrations ()
 
 if [ -f transform.sh ]; then
   chmod +x transform.sh
-
-  set +o errexit
   ./transform.sh ${ENV}
-  if [ $? -ne 0 ]; then
-    set -o errexit
-    cleanup_and_exit_with_code $?
-  fi
 fi
 
 echo
