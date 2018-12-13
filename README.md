@@ -18,6 +18,4 @@ Wrapper script to add support for DML database migrations to [migrate](https://g
 
 ## Contributors
 
-In alphabetical order:
-
-Peter Lorre et al.
+In alphabetical order are Peter Lorre et al.
