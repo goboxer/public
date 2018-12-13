@@ -13,8 +13,10 @@ log ()
   echo "${SCRIPT_NAME} -> ${1}"
 }
 
-exit_with_code ()
+cleanup_and_exit_with_code ()
 {
+  find . -name "*.tmp.*" | xargs rm -f
+
   echo
   log "END `date '+%Y-%m-%d %H:%M:%S'`"
 	exit ${1}
@@ -32,7 +34,7 @@ echo
 
 if [ $# -lt 4 ]; then
   log "Usage: migrate ENV GCP_PROJECT_ID SPANNER_INSTANCE_ID SPANNER_DATABASE_ID"
-  exit_with_code 2
+  cleanup_and_exit_with_code 2
 
   else
     export ENV=${1}
@@ -268,13 +270,13 @@ fn_count_migrations
 
 if [ ${MIGRATION_COUNT} -eq 0 ]; then
   log "No migrations available"
-  exit_with_code 0
+  cleanup_and_exit_with_code 0
 fi
 
 if [ ${MIGRATION_COUNT_DML} -eq 0 ]; then
   log "No DML migrations available"
 	fn_apply_all_ddl
-  exit_with_code 0
+  cleanup_and_exit_with_code 0
 fi
 
 echo
@@ -285,10 +287,10 @@ fn_determine_outstanding_migrations
 
 if [ ${OUTSTANDING_MIGRATIONS_COUNT} -eq 0 ]; then
   log "No migrations needed"
-  exit_with_code 0
+  cleanup_and_exit_with_code 0
 fi
 
 echo
 fn_apply_migrations
 
-exit_with_code 0
+cleanup_and_exit_with_code 0
