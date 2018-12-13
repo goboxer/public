@@ -12,7 +12,7 @@ gcloud config configurations activate [CONFIGURATION_NAME]
 gcloud spanner databases create [SPANNER_DATABASE_ID] --instance=[SPANNER INSTANCE ID]
 
 # DDL and DML
-./migrate.sh [GCP_PROJECT_ID] [SPANNER INSTANCE ID] [SPANNER_DATABASE_ID]
+./migrate.sh [ENV] [GCP_PROJECT_ID] [SPANNER INSTANCE ID] [SPANNER_DATABASE_ID]
 
 # DDL only
 migrate -path . -database spanner://projects/[GCP_PROJECT_ID]/instances/[SPANNER INSTANCE ID]/databases/[SPANNER_DATABASE_ID] up

@@ -30,14 +30,15 @@ log "START `date '+%Y-%m-%d %H:%M:%S'`"
 log "ENTER as user ${WHOAMI}..."
 echo
 
-if [ $# -lt 3 ]; then
-  log "Usage: migrate GCP_PROJECT_ID SPANNER_INSTANCE_ID SPANNER_DATABASE_ID"
+if [ $# -lt 4 ]; then
+  log "Usage: migrate ENV GCP_PROJECT_ID SPANNER_INSTANCE_ID SPANNER_DATABASE_ID"
   exit_with_code 2
 
   else
-    export GCP_PROJECT_ID=${1}
-    export SPANNER_INSTANCE_ID=${2}
-    export SPANNER_DATABASE_ID=${3}
+    export ENV=${1}
+    export GCP_PROJECT_ID=${2}
+    export SPANNER_INSTANCE_ID=${3}
+    export SPANNER_DATABASE_ID=${4}
 fi
 
 TEST_MODE=false
@@ -58,6 +59,7 @@ SELECT Version from SchemaMigrations;
 
 echo
 log "TEST_MODE=${TEST_MODE}"
+log "ENV=${ENV}"
 log "GCP_PROJECT_ID=${GCP_PROJECT_ID}"
 log "SPANNER_INSTANCE_ID=${SPANNER_INSTANCE_ID}"
 log "SPANNER_DATABASE_ID=${SPANNER_DATABASE_ID}"
@@ -258,7 +260,7 @@ fn_apply_migrations ()
 
 if [ -f transform.sh ]; then
   chmod +x transform.sh
-  ./transform.sh
+  ./transform.sh ${ENV}
 fi
 
 echo
