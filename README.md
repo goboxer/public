@@ -9,3 +9,15 @@ We now use a websocket based API to transcribe audio via Google's Cloud Speech-t
 - [Speech to Text via Audio ScriptProcessorNode](https://github.com/localcover/public/tree/master/speech-script-processor-node/README.md)
 
 - [Speech to Text via Audio Worklets](https://github.com/localcover/public/tree/master/speech-worklets/README.md)
+
+## Database Migrations
+
+Wrapper script to add support for DML database migrations to [migrate](https://github.com/golang-migrate/migrate).
+
+- [Spanner Database DML Migrations](https://github.com/localcover/public/tree/master/migrations/README.md)
+
+## Contributors
+
+In alphabetical order:
+
+Peter Lorre et al.
