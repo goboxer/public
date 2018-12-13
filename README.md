@@ -14,7 +14,7 @@ We now use a websocket based API to transcribe audio via Google's Cloud Speech-t
 
 Wrapper script to add support for DML database migrations to [migrate](https://github.com/golang-migrate/migrate).
 
-- [Spanner Database DML Migrations](https://github.com/localcover/public/tree/master/migrations/README.md)
+- [Spanner Database DML Migrations](https://github.com/localcover/public/tree/master/spanner-migrations/README.md)
 
 ## Contributors
 
