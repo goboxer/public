@@ -160,9 +160,9 @@ fn_last_migration ()
   log "LEAVE fn_last_migration..."
 }
 
-fn_determine_outstanding_migrations ()
+fn_outstanding_migrations ()
 {
-  log "ENTER fn_determine_outstanding_migrations..."
+  log "ENTER fn_outstanding_migrations..."
 
 	OUTSTANDING_MIGRATIONS=""
 	OUTSTANDING_MIGRATIONS_COUNT=0
@@ -183,7 +183,7 @@ fn_determine_outstanding_migrations ()
 
   OUTSTANDING_MIGRATIONS=$(echo ${OUTSTANDING_MIGRATIONS} | sort -n)
 
-  log "LEAVE fn_determine_outstanding_migrations..."
+  log "LEAVE fn_outstanding_migrations..."
 }
 
 fn_apply_all_ddl ()
@@ -290,7 +290,7 @@ echo
 fn_last_migration
 
 echo
-fn_determine_outstanding_migrations
+fn_outstanding_migrations
 
 if [ ${OUTSTANDING_MIGRATIONS_COUNT} -eq 0 ]; then
   log "No migrations needed"
