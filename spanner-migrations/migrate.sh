@@ -15,6 +15,7 @@ log ()
 
 cleanup ()
 {
+  echo
   log "Cleaning up..."
   find . -name "*.tmp.*" | xargs rm -f
 }
@@ -26,7 +27,7 @@ cleanup_and_exit_with_code ()
 
   echo
   log "END `date '+%Y-%m-%d %H:%M:%S'`"
-	exit ${1}
+  exit ${1}
 }
 
 SCRIPT_DIR="$( cd "$(dirname "${0}")" ; pwd -P )"
@@ -79,7 +80,7 @@ fn_count_migrations ()
 {
   log "ENTER fn_count_migrations..."
 
-	if [ "${TEST_MODE}" == true ]; then
+  if [ "${TEST_MODE}" == true ]; then
     MIGRATIONS=${TEST_MIGRATIONS}
   else
     MIGRATIONS=$(find . -name "*.up.sql" -o -name "*.dml.sql")
@@ -94,36 +95,36 @@ fn_count_migrations ()
 
   log "MIGRATIONS=${MIGRATIONS}"
 
-	MIGRATION_COUNT=$(echo "${MIGRATIONS}" | wc -w | tr -d '[:space:]')
-	if [ -z "${MIGRATION_COUNT}" ]; then
+  MIGRATION_COUNT=$(echo "${MIGRATIONS}" | wc -w | tr -d '[:space:]')
+  if [ -z "${MIGRATION_COUNT}" ]; then
     log "No migrations available"
-	  MIGRATION_COUNT=0
-	fi
+    MIGRATION_COUNT=0
+  fi
   log "MIGRATION_COUNT=${MIGRATION_COUNT}"
 
   MIGRATIONS_DDL=""
   MIGRATIONS_DML=""
 
-	for i in ${MIGRATIONS}
-	do
+  for i in ${MIGRATIONS}
+  do
     log "  Checking ${i}"
-		if [ ${i: -7} == ".up.sql" ]; then
-			MIGRATIONS_DDL+="${i} "
-		elif [ ${i: -8} == ".dml.sql" ]; then
-			MIGRATIONS_DML+="${i} "
+    if [ ${i: -7} == ".up.sql" ]; then
+      MIGRATIONS_DDL+="${i} "
+    elif [ ${i: -8} == ".dml.sql" ]; then
+      MIGRATIONS_DML+="${i} "
     else
       log "  Skipping ${i}"
-		fi
-	done
+    fi
+  done
 
-	if [ -z "${MIGRATIONS_DDL}" ]; then
+  if [ -z "${MIGRATIONS_DDL}" ]; then
     log "No DDL migrations available"
-	  MIGRATION_COUNT_DDL=0
-	fi
-	if [ -z "${MIGRATIONS_DML}" ]; then
+    MIGRATION_COUNT_DDL=0
+  fi
+  if [ -z "${MIGRATIONS_DML}" ]; then
     log "No DML migrations available"
-	  MIGRATION_COUNT_DML=0
-	fi
+    MIGRATION_COUNT_DML=0
+  fi
 
   MIGRATION_COUNT_DDL=$(echo "${MIGRATIONS_DDL}" | wc -w | tr -d '[:space:]')
   MIGRATION_COUNT_DML=$(echo "${MIGRATIONS_DML}" | wc -w | tr -d '[:space:]')
@@ -145,15 +146,15 @@ fn_last_migration ()
     LAST_MIGRATION=${TEST_LAST_MIGRATION}
     LAST_MIGRATION=$(echo "${LAST_MIGRATION}" | awk 'END{print $NF}')
   else
-	  LAST_MIGRATION=$(gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="SELECT Version from SchemaMigrations" | awk 'END{print $NF}')
+    LAST_MIGRATION=$(gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="SELECT Version from SchemaMigrations" | awk 'END{print $NF}')
   fi
 
-	set +o nounset
-	if [ -z "${LAST_MIGRATION}" ]; then
+  set +o nounset
+  if [ -z "${LAST_MIGRATION}" ]; then
     log "No migrations applied, will apply all"
-		LAST_MIGRATION=0
-	fi
-	set -o nounset
+    LAST_MIGRATION=0
+  fi
+  set -o nounset
 
   log "LAST_MIGRATION=${LAST_MIGRATION}"
 
@@ -164,19 +165,19 @@ fn_outstanding_migrations ()
 {
   log "ENTER fn_outstanding_migrations..."
 
-	OUTSTANDING_MIGRATIONS=""
-	OUTSTANDING_MIGRATIONS_COUNT=0
+  OUTSTANDING_MIGRATIONS=""
+  OUTSTANDING_MIGRATIONS_COUNT=0
 
-	for i in ${MIGRATIONS}
-	do
+  for i in ${MIGRATIONS}
+  do
     log "  Checking ${i}"
-		n=$(echo ${i} | cut -c1-3 | awk 'END{print $NF}')
+    n=$(echo ${i} | cut -c1-3 | awk 'END{print $NF}')
     log "    with prefix ${n}"
     if [ ${n} -gt ${LAST_MIGRATION} ]; then
-    	OUTSTANDING_MIGRATIONS+="${i} "
-    	OUTSTANDING_MIGRATIONS_COUNT=$((OUTSTANDING_MIGRATIONS_COUNT+1))
+      OUTSTANDING_MIGRATIONS+="${i} "
+      OUTSTANDING_MIGRATIONS_COUNT=$((OUTSTANDING_MIGRATIONS_COUNT+1))
     fi
-	done
+  done
 
   log "OUTSTANDING_MIGRATIONS=${OUTSTANDING_MIGRATIONS}"
   log "OUTSTANDING_MIGRATIONS_COUNT=${OUTSTANDING_MIGRATIONS_COUNT}"
@@ -250,18 +251,18 @@ fn_apply_migrations ()
 
   log "OUTSTANDING_MIGRATIONS=${OUTSTANDING_MIGRATIONS}"
 
-	for i in ${OUTSTANDING_MIGRATIONS}
-	do
+  for i in ${OUTSTANDING_MIGRATIONS}
+  do
     log "  Processing ${i}"
-		n=$(echo ${i} | cut -c1-3 | awk 'END{print $NF}')
+    n=$(echo ${i} | cut -c1-3 | awk 'END{print $NF}')
     log "    with prefix ${n}"
 
-		if [ ${i: -8} == ".dml.sql" ]; then
+    if [ ${i: -8} == ".dml.sql" ]; then
       fn_apply_dml ${i}
-		else
+    else
       fn_apply_ddl ${i}
-		fi
-	done
+    fi
+  done
 
   log "LEAVE fn_apply_migrations..."
 }
@@ -282,7 +283,7 @@ fi
 
 if [ ${MIGRATION_COUNT_DML} -eq 0 ]; then
   log "No DML migrations available"
-	fn_apply_all_ddl
+  fn_apply_all_ddl
   cleanup_and_exit_with_code 0
 fi
 
