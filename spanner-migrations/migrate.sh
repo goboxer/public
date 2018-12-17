@@ -90,6 +90,7 @@ echo
 # -> FUNCTIONS ----------------------------------------
 fn_replace_tokens ()
 {
+  echo
   log "ENTER fn_replace_tokens..."
 
   TOKEN_FILE=$(basename ${1} .tmp.dml.sql).json
@@ -117,6 +118,7 @@ fn_replace_tokens ()
 
 fn_process_tmpl ()
 {
+  echo
   log "ENTER fn_process_tmpl..."
 
   DML_FILE=$(basename ${1} .dml.sql).tmp.dml.sql
@@ -135,6 +137,7 @@ fn_process_tmpl ()
 
 fn_count_migrations ()
 {
+  echo
   log "ENTER fn_count_migrations..."
 
   if [ "${TEST_MODE}" == true ]; then
@@ -197,6 +200,7 @@ fn_count_migrations ()
 
 fn_last_migration ()
 {
+  echo
   log "ENTER fn_last_migration..."
 
   if [ "${TEST_MODE}" == true ]; then
@@ -237,6 +241,7 @@ fn_last_migration ()
 
 fn_outstanding_migrations ()
 {
+  echo
   log "ENTER fn_outstanding_migrations..."
 
   OUTSTANDING_MIGRATIONS=""
@@ -274,6 +279,7 @@ fn_outstanding_migrations ()
 
 fn_apply_all_ddl ()
 {
+  echo
   log "ENTER fn_apply_all_ddl..."
 
   if [ "${TEST_MODE}" == true ]; then
@@ -287,6 +293,7 @@ fn_apply_all_ddl ()
 
 fn_apply_ddl ()
 {
+  echo
   log "ENTER fn_apply_ddl..."
 
   log "Applying revision ${2} from file ${1}"
@@ -302,6 +309,7 @@ fn_apply_ddl ()
 
 fn_apply_dml ()
 {
+  echo
   log "ENTER fn_apply_dml..."
 
   log "Applying revision ${2} from file ${1}"
@@ -329,10 +337,26 @@ fn_apply_dml ()
     done < "${1}.tmp"
     rm -f "${1}.tmp"
 
-    log "Setting revision ${2} in DataMigrations for completed DML migration ${1}"
-    gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="INSERT INTO DataMigrations (Version) VALUES (${2})"
-    log "Removing revision ${LAST_MIGRATION_DML} in DataMigrations for superseded DML migration"
-    gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="DELETE FROM DataMigrations WHERE Version=${LAST_MIGRATION_DML}"
+    if [ ${2} -ne ${LAST_MIGRATION_DML} ]; then
+      log "Setting revision ${2} in DataMigrations for completed DML migration ${1}"
+      gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="INSERT INTO DataMigrations (Version) VALUES (${2})"
+    else
+      # There can be multiple DML changesets in a revision
+      log "Skipping setting revision ${2} in DataMigrations for completed DML migration ${1} since it is part of a changeset"
+    fi
+
+    if [ ${LAST_MIGRATION_DML} -gt 0 ]; then
+      if [ ${LAST_MIGRATION_DML} -ne ${2} ]; then
+        log "Removing revision ${LAST_MIGRATION_DML} in DataMigrations for superseded DML migration"
+        gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="DELETE FROM DataMigrations WHERE Version=${LAST_MIGRATION_DML}"
+      else
+        # There can be multiple DML changesets in a revision
+        log "Skipping removing revision ${2} in DataMigrations for completed DML migration ${1} since it is part of a changeset"
+      fi
+    fi
+
+    # The last DML revision must be recorded because there can be multiple DML changesets in a revision
+    LAST_MIGRATION_DML=${2}
   fi
 
   log "LEAVE fn_apply_dml..."
@@ -340,6 +364,7 @@ fn_apply_dml ()
 
 fn_apply_migrations ()
 {
+  echo
   log "ENTER fn_apply_migrations..."
 
   log "OUTSTANDING_MIGRATIONS=${OUTSTANDING_MIGRATIONS}"
@@ -363,7 +388,6 @@ fn_apply_migrations ()
 }
 # <- FUNCTIONS ----------------------------------------
 
-echo
 fn_count_migrations
 
 if [ ${MIGRATION_COUNT} -eq 0 ]; then
@@ -379,10 +403,8 @@ if [ ${MIGRATION_COUNT_DML} -eq 0 ]; then
   exit_with_code 0
 fi
 
-echo
 fn_last_migration
 
-echo
 fn_outstanding_migrations
 
 if [ ${OUTSTANDING_MIGRATIONS_COUNT} -eq 0 ]; then
@@ -391,7 +413,6 @@ if [ ${OUTSTANDING_MIGRATIONS_COUNT} -eq 0 ]; then
   exit_with_code 0
 fi
 
-echo
 fn_apply_migrations
 
 exit_with_code 0
