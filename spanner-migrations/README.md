@@ -8,9 +8,12 @@ The wrapper script requires the following naming convention for migrations and m
 
     [REVISION]_[domain]_[FEATURE].ddl.up.sql
     [REVISION]_[domain]_[FEATURE].[ENV].dml.sql
+
+DML can contain tokens and if so the tokens will be resolved if files like this exist:
+
     [REVISION]_[domain]_[FEATURE].[ENV].json
 
-The first the DDL migration requires at least the following:
+The first DDL migration requires at least the following:
 
 ```sql
 CREATE TABLE DataMigrations (
