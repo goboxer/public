@@ -13,7 +13,7 @@ log ()
 {
   set +o nounset
   if [ "${TEST_MODE}" == true ]; then
-    log "${SCRIPT_NAME} -> TEST MODE -> ${1}"
+    echo "${SCRIPT_NAME} -> TEST MODE -> ${1}"
   else
     echo "${SCRIPT_NAME} -> ${1}"
   fi
