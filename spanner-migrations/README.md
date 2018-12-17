@@ -9,7 +9,8 @@ The wrapper script requires the following naming convention for migrations and m
     [REVISION]_[domain]_[FEATURE].ddl.up.sql
     [REVISION]_[domain]_[FEATURE].[ENV].dml.sql
 
-DML can contain tokens and if so the tokens will be resolved if files like this exist:
+DML can contain tokens and if so the tokens will be resolved if a JSON token definition files exists.
+These JSON token definition files are optional but there can only be one per DML file:
 
     [REVISION]_[domain]_[FEATURE].[ENV].json
 

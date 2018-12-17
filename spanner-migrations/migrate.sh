@@ -11,7 +11,11 @@ set -o nounset
 
 log ()
 {
-  echo "${SCRIPT_NAME} -> ${1}"
+  if [ "${TEST_MODE}" == true ]; then
+    log "${SCRIPT_NAME} -> TEST MODE -> ${1}"
+  else
+    echo "${SCRIPT_NAME} -> ${1}"
+  fi
 }
 
 on_exit ()
@@ -118,10 +122,9 @@ fn_process_tmpl ()
   log "Will stage DML ${1} to ${DML_FILE} prior to replacing any tokens"
 
   if [ "${TEST_MODE}" == true ]; then
-    log "TEST MODE -> Skipping"
+    log "Skipping"
   else
     cp -f ${1} ${DML_FILE}
-
     fn_replace_tokens ${DML_FILE}
   fi
 
@@ -268,7 +271,7 @@ fn_apply_all_ddl ()
   log "ENTER fn_apply_all_ddl..."
 
   if [ "${TEST_MODE}" == true ]; then
-    log "TEST MODE -> Skipping"
+    log "Skipping"
   else
     migrate -path . -database spanner://projects/${GCP_PROJECT_ID}/instances/${SPANNER_INSTANCE_ID}/databases/${SPANNER_DATABASE_ID} up
   fi
@@ -283,7 +286,7 @@ fn_apply_ddl ()
   log "Applying revision ${2} from file ${1}"
 
   if [ "${TEST_MODE}" == true ]; then
-    log "TEST MODE -> Skipping"
+    log "Skipping"
   else
     migrate -path . -database spanner://projects/${GCP_PROJECT_ID}/instances/${SPANNER_INSTANCE_ID}/databases/${SPANNER_DATABASE_ID} up 1
   fi
@@ -304,7 +307,7 @@ fn_apply_dml ()
       if [[ -z "${line// }" ]]; then
         log "  Skipping empty line..."
       else
-        log "TEST MODE -> Skipping ${line}"
+        log "Skipping ${line}"
       fi
     done < "${1}.tmp.tmp"
     rm -f "${1}.tmp" "${1}.tmp.tmp"
