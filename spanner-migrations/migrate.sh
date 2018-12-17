@@ -113,6 +113,7 @@ fn_replace_tokens ()
   fi
 
   log "LEAVE fn_replace_tokens..."
+  echo
 }
 
 fn_process_tmpl ()
@@ -132,6 +133,7 @@ fn_process_tmpl ()
   fi
 
   log "LEAVE fn_process_tmpl..."
+  echo
 }
 
 fn_count_migrations ()
@@ -195,6 +197,7 @@ fn_count_migrations ()
   log "MIGRATION_COUNT_DML=${MIGRATION_COUNT_DML}"
 
   log "LEAVE fn_count_migrations..."
+  echo
 }
 
 fn_last_migration ()
@@ -236,6 +239,7 @@ fn_last_migration ()
   log "LAST_MIGRATION=${LAST_MIGRATION}"
 
   log "LEAVE fn_last_migration..."
+  echo
 }
 
 fn_outstanding_migrations ()
@@ -274,6 +278,7 @@ fn_outstanding_migrations ()
   log "OUTSTANDING_MIGRATIONS_COUNT=${OUTSTANDING_MIGRATIONS_COUNT}"
 
   log "LEAVE fn_outstanding_migrations..."
+  echo
 }
 
 fn_apply_all_ddl ()
@@ -288,6 +293,7 @@ fn_apply_all_ddl ()
   fi
 
   log "LEAVE fn_apply_all_ddl..."
+  echo
 }
 
 fn_apply_ddl ()
@@ -304,6 +310,7 @@ fn_apply_ddl ()
   fi
 
   log "LEAVE fn_apply_ddl..."
+  echo
 }
 
 fn_apply_dml ()
@@ -312,6 +319,11 @@ fn_apply_dml ()
   log "ENTER fn_apply_dml..."
 
   log "Applying revision ${2} from file ${1}"
+
+  if [ ${2} -eq ${LAST_MIGRATION_DML} ]; then
+    log "Cannot set revision ${2} in DataMigrations for pending DML migration ${1} since it has already been applied. Do you have 2 DML files with the same revision for the same environmnet?"
+    exit_with_code 1
+  fi
 
   if [ "${TEST_MODE}" == true ]; then
     echo "${TEST_DML}" > "${1}.tmp"
@@ -336,29 +348,22 @@ fn_apply_dml ()
     done < "${1}.tmp"
     rm -f "${1}.tmp"
 
-    if [ ${2} -ne ${LAST_MIGRATION_DML} ]; then
-      log "Setting revision ${2} in DataMigrations for completed DML migration ${1}"
-      gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="INSERT INTO DataMigrations (Version) VALUES (${2})"
-    else
-      # There can be multiple DML changesets in a revision e.g. DML for 'all' environments and DML for the 'uat' environment
-      log "Skipping setting revision ${2} in DataMigrations for completed DML migration ${1} since it is part of a changeset"
-    fi
+    log "Setting revision ${2} in DataMigrations for completed DML migration ${1}"
+    gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="INSERT INTO DataMigrations (Version) VALUES (${2})"
 
     if [ ${LAST_MIGRATION_DML} -gt 0 ]; then
-      if [ ${LAST_MIGRATION_DML} -ne ${2} ]; then
-        log "Removing revision ${LAST_MIGRATION_DML} in DataMigrations for superseded DML migration"
-        gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="DELETE FROM DataMigrations WHERE Version=${LAST_MIGRATION_DML}"
-      else
-        # There can be multiple DML changesets in a revision e.g. DML for 'all' environments and DML for the 'uat' environment
-        log "Skipping removing revision ${2} in DataMigrations for completed DML migration ${1} since it is part of a changeset"
-      fi
+      log "Removing revision ${LAST_MIGRATION_DML} in DataMigrations for superseded DML migration"
+      gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="DELETE FROM DataMigrations WHERE Version=${LAST_MIGRATION_DML}"
+    else
+      log "This is the first DML so there is no superseded DML migration to remove"
     fi
 
-    # The last DML revision must be recorded because there can be multiple DML changesets in a revision e.g. DML for 'all' environments and DML for the 'uat' environment
+    log "Recording in memory the last DML revision ${2} so if there are multiple DML revisions to apply this function can still do some sanity checks before it starts work"
     LAST_MIGRATION_DML=${2}
   fi
 
   log "LEAVE fn_apply_dml..."
+  echo
 }
 
 fn_apply_migrations ()
@@ -384,19 +389,18 @@ fn_apply_migrations ()
   done
 
   log "LEAVE fn_apply_migrations..."
+  echo
 }
 # <- FUNCTIONS ----------------------------------------
 
 fn_count_migrations
 
 if [ ${MIGRATION_COUNT} -eq 0 ]; then
-  echo
   log "No migrations available"
   exit_with_code 0
 fi
 
 if [ ${MIGRATION_COUNT_DML} -eq 0 ]; then
-  echo
   log "No DML migrations available"
   fn_apply_all_ddl
   exit_with_code 0
@@ -407,7 +411,6 @@ fn_last_migration
 fn_outstanding_migrations
 
 if [ ${OUTSTANDING_MIGRATIONS_COUNT} -eq 0 ]; then
-  echo
   log "No migrations needed"
   exit_with_code 0
 fi
