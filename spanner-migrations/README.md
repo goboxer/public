@@ -8,11 +8,15 @@ The wrapper script requires the following naming convention for migrations and m
 
     [REVISION]_[domain]_[FEATURE].ddl.up.sql
     [REVISION]_[domain]_[FEATURE].[ENV].dml.sql
+    [REVISION]_[domain]_[FEATURE].[ENV].[ENV].dml.sql
+    [REVISION]_[domain]_[FEATURE].all.dml.sql
 
 DML can contain tokens and if so the tokens will be resolved if a JSON token definition files exists.
 These JSON token definition files are optional but there can only be one per DML file:
 
     [REVISION]_[domain]_[FEATURE].[ENV].json
+    [REVISION]_[domain]_[FEATURE].[ENV].[ENV].json
+    [REVISION]_[domain]_[FEATURE].all.json
 
 Note that there can only be one DML file for a revision for each environment.
 
