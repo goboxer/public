@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # This script:
-# -> Transforms .dml.sql files using their adjacent .json token file
-# -> Applies DDL and DML migrations
+# -> Applies DDL and DML migrations including resolving tokens in .dml.sql files using their adjacent .json token file
 
 # Exit when a command fails
 set -o errexit
