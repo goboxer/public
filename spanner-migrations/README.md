@@ -4,6 +4,20 @@ We use the excellent [migrate](https://github.com/golang-migrate/migrate) tool f
 DML is useful when a new feauture requires some non-transactional data.
 We work around this with a wrapper script which interleaves DML migrations using [Google Cloud SDK](https://cloud.google.com/sdk/install) commands.
 
+The wrapper script requires the following naming convention for migrations and maintains DML migration revision history in the table 'DataMigrations':
+
+    [REVISION]_[domain]_[FEATURE].ddl.up.sql
+    [REVISION]_[domain]_[FEATURE].[ENV].dml.sql
+    [REVISION]_[domain]_[FEATURE].[ENV].json
+
+The first the DDL migration requires at least the following:
+
+```sql
+CREATE TABLE DataMigrations (
+  Version INT64 NOT NULL,
+) PRIMARY KEY (Version);
+```
+
 ## Usage
 
 ```shell
