@@ -59,7 +59,7 @@ if [ $# -lt 4 ]; then
     export SPANNER_DATABASE_ID=${4}
 fi
 
-TEST_MODE=true
+TEST_MODE=false
 TEST_MIGRATIONS="./008_bar_create_indexes.ddl.up.sql
 ./001_foo_create.ddl.up.sql
 ./007_foo_bar_load.dml.sql
