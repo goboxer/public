@@ -341,7 +341,7 @@ fn_apply_dml ()
       log "Setting revision ${2} in DataMigrations for completed DML migration ${1}"
       gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="INSERT INTO DataMigrations (Version) VALUES (${2})"
     else
-      # There can be multiple DML changesets in a revision
+      # There can be multiple DML changesets in a revision e.g. DML for 'all' environments and DML for the 'uat' environment
       log "Skipping setting revision ${2} in DataMigrations for completed DML migration ${1} since it is part of a changeset"
     fi
 
@@ -350,12 +350,12 @@ fn_apply_dml ()
         log "Removing revision ${LAST_MIGRATION_DML} in DataMigrations for superseded DML migration"
         gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="DELETE FROM DataMigrations WHERE Version=${LAST_MIGRATION_DML}"
       else
-        # There can be multiple DML changesets in a revision
+        # There can be multiple DML changesets in a revision e.g. DML for 'all' environments and DML for the 'uat' environment
         log "Skipping removing revision ${2} in DataMigrations for completed DML migration ${1} since it is part of a changeset"
       fi
     fi
 
-    # The last DML revision must be recorded because there can be multiple DML changesets in a revision
+    # The last DML revision must be recorded because there can be multiple DML changesets in a revision e.g. DML for 'all' environments and DML for the 'uat' environment
     LAST_MIGRATION_DML=${2}
   fi
 
