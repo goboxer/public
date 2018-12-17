@@ -11,11 +11,13 @@ set -o nounset
 
 log ()
 {
+  set +o nounset
   if [ "${TEST_MODE}" == true ]; then
     log "${SCRIPT_NAME} -> TEST MODE -> ${1}"
   else
     echo "${SCRIPT_NAME} -> ${1}"
   fi
+  set -o nounset
 }
 
 on_exit ()
@@ -57,7 +59,7 @@ if [ $# -lt 4 ]; then
     export SPANNER_DATABASE_ID=${4}
 fi
 
-TEST_MODE=false
+TEST_MODE=true
 TEST_MIGRATIONS="./008_bar_create_indexes.ddl.up.sql
 ./001_foo_create.ddl.up.sql
 ./007_foo_bar_load.dml.sql
