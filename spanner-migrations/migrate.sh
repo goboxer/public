@@ -249,6 +249,8 @@ fn_outstanding_migrations ()
 
   OUTSTANDING_MIGRATIONS=""
   OUTSTANDING_MIGRATIONS_COUNT=0
+  OUTSTANDING_MIGRATIONS_MAX_DDL_REVISION=0
+  OUTSTANDING_MIGRATIONS_MAX_DML_REVISION=0
 
   for i in ${MIGRATIONS_DDL}
   do
@@ -269,6 +271,16 @@ fn_outstanding_migrations ()
     if [ ${n} -gt ${LAST_MIGRATION} ]; then
       OUTSTANDING_MIGRATIONS+="${i} "
       OUTSTANDING_MIGRATIONS_COUNT=$((OUTSTANDING_MIGRATIONS_COUNT+1))
+
+      if [ ${i: -8} == ".dml.sql" ]; then
+        if [ ${n} -gt ${OUTSTANDING_MIGRATIONS_MAX_DML_REVISION} ]; then
+          OUTSTANDING_MIGRATIONS_MAX_DML_REVISION=${n}
+        fi
+      else
+        if [ ${n} -gt ${OUTSTANDING_MIGRATIONS_MAX_DDL_REVISION} ]; then
+          OUTSTANDING_MIGRATIONS_MAX_DDL_REVISION=${n}
+        fi
+      fi
     fi
   done
 
@@ -276,6 +288,8 @@ fn_outstanding_migrations ()
 
   log "OUTSTANDING_MIGRATIONS=${OUTSTANDING_MIGRATIONS}"
   log "OUTSTANDING_MIGRATIONS_COUNT=${OUTSTANDING_MIGRATIONS_COUNT}"
+  log "OUTSTANDING_MIGRATIONS_MAX_DDL_REVISION=${OUTSTANDING_MIGRATIONS_MAX_DDL_REVISION}"
+  log "OUTSTANDING_MIGRATIONS_MAX_DML_REVISION=${OUTSTANDING_MIGRATIONS_MAX_DML_REVISION}"
 
   log "LEAVE fn_outstanding_migrations..."
   echo
@@ -349,7 +363,7 @@ fn_apply_dml ()
     rm -f "${1}.tmp"
 
     log "Setting revision ${2} in DataMigrations for completed DML migration ${1}"
-    gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="INSERT INTO DataMigrations (Version) VALUES (${2})"
+    gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="INSERT INTO DataMigrations (Version, Dirty) VALUES (${2}, True)"
 
     if [ ${LAST_MIGRATION_DML} -gt 0 ]; then
       log "Removing revision ${LAST_MIGRATION_DML} in DataMigrations for superseded DML migration"
@@ -373,6 +387,18 @@ fn_apply_migrations ()
 
   log "OUTSTANDING_MIGRATIONS=${OUTSTANDING_MIGRATIONS}"
 
+  if [ ${MIGRATION_COUNT_DML} -gt 0 ]; then
+    log "There are DML migrations, DML tracking table will now be created if it does not exist"
+    set +o nounset
+    gcloud spanner databases ddl update ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --ddl="CREATE TABLE DataMigrations (Version INT64 NOT NULL, Dirty BOOL NOT NULL) PRIMARY KEY (Version);"
+    set -o nounset
+    if [ $? -gt 0 ]; then
+      log "DML migration tracking table already exists, please ignore error"
+    else
+      log "Created DML migration tracking table"
+    fi
+  fi
+
   for i in ${OUTSTANDING_MIGRATIONS}
   do
     log "  Processing ${i}"
@@ -383,6 +409,11 @@ fn_apply_migrations ()
       fn_process_tmpl ${i}
       DML_FILE=$(basename ${i} .dml.sql).tmp.dml.sql
       fn_apply_dml ${DML_FILE} ${n}
+
+      if [ ${n} -eq ${OUTSTANDING_MIGRATIONS_MAX_DML_REVISION} ]; then
+        log "DML migrations have completed, updating DML tracking table to reflect that they were all successful"
+        gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="UPDATE DataMigrations SET Dirty=False WHERE Version = (SELECT maxVersion FROM (SELECT MAX(Version) maxVersion FROM DataMigrations))"
+      fi
     else
       fn_apply_ddl ${i} ${n}
     fi
