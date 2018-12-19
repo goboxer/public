@@ -212,9 +212,19 @@ fn_last_migration ()
   else
     log "Inspecting table SchemaMigrations for last revision"
     LAST_MIGRATION_DDL=$(gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="SELECT Version from SchemaMigrations" | awk 'END{print $NF}')
+    if [ -z "${LAST_MIGRATION_DDL}" ]; then
+      log "DDL migration tracking table does not exist, PLEASE IGNORE ERROR, table will be created if necessary"
+    else
+      log "DDL migration tracking table exists"
+    fi
 
     log "Inspecting table DataMigrations for last revision"
     LAST_MIGRATION_DML=$(gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="SELECT Version from DataMigrations" | awk 'END{print $NF}')
+    if [ -z "${LAST_MIGRATION_DML}" ]; then
+      log "DML migration tracking table does not exist, PLEASE IGNORE ERROR, table will be created if necessary"
+    else
+      log "DML migration tracking table exists"
+    fi
   fi
 
   set +o nounset
