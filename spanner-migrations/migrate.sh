@@ -156,7 +156,9 @@ fn_count_migrations ()
   # Apply 'basename' THEN apply 'sort' THEN convert newlines to spaces
   # -> 'sort' must come last
   # -> 'xargs -n 1' because 'basename'/'sort' cannot take more than one item as param
+  set +o errexit
   MIGRATIONS=$(echo ${MIGRATIONS} | xargs -n1 basename | xargs -n1 | sort -g | xargs)
+  set -o errexit
 
   log "MIGRATIONS=${MIGRATIONS}"
 
