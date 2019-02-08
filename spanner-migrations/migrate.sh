@@ -151,14 +151,15 @@ fn_count_migrations ()
     MIGRATIONS=$(find . -name "*.ddl.up.sql" -o -name "*.all.dml.sql" -o -name "*.${ENV}.dml.sql" -o -name "*.${ENV}.*.dml.sql")
   fi
 
-  log "Processing unsorted ${MIGRATIONS}"
-
-  # Apply 'basename' THEN apply 'sort' THEN convert newlines to spaces
-  # -> 'sort' must come last
-  # -> 'xargs -n 1' because 'basename'/'sort' cannot take more than one item as param
-  set +o errexit
-  MIGRATIONS=$(echo ${MIGRATIONS} | xargs -n1 basename | xargs -n1 | sort -g | xargs)
-  set -o errexit
+  if [ -z "${MIGRATIONS}" ]; then
+    log "No migrations to process"
+    else
+      log "Processing migrations (unsorted) '${MIGRATIONS}'"
+      # Apply 'basename' THEN apply 'sort' THEN convert newlines to spaces
+      # -> 'sort' must come last
+      # -> 'xargs -n 1' because 'basename'/'sort' cannot take more than one item as param
+      MIGRATIONS=$(echo ${MIGRATIONS} | xargs -n1 basename | xargs -n1 | sort -g | xargs)
+  fi
 
   log "MIGRATIONS=${MIGRATIONS}"
 
