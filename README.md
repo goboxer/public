@@ -2,7 +2,7 @@
 
 The following examples demonstrate solving some tricky issues and are published in the hope that they may help or provide inspiration.
 
-## Speech
+## Google Cloud Speech-to-Text Speech
 
 We now use a websocket based API to transcribe audio via Google's Cloud Speech-to-Text API but originally we transcoded in the browser and called Google's API directly.
 
@@ -10,7 +10,7 @@ We now use a websocket based API to transcribe audio via Google's Cloud Speech-t
 
 - [Speech to Text via Audio Worklets](https://github.com/localcover/public/tree/master/speech-worklets/README.md)
 
-## Database Migrations
+## Spanner Database Migrations
 
 Wrapper script to add support for DML database migrations to [migrate](https://github.com/golang-migrate/migrate).
 
