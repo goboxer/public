@@ -1,8 +1,10 @@
 # Google AppEngine Flexible Tricks
 
-## Deployment Robustness
+## Advanced Deployment Techniques
 
-In order to work around [Known Issues in the App Engine Flexible Environment](https://cloud.google.com/appengine/docs/flexible/known-issues) and avoid random HTTP 503 errors for the first few minutes after a deployment we use the following bash script.
+When using the simply AppEngine deployment command there is an issue in the Flexible environment with random HTTP 503 errors for the first few minutes after the deployment completes, see [Known Issues in the App Engine Flexible Environment](https://cloud.google.com/appengine/docs/flexible/known-issues).
+However AppEngine supports two stage deployments which solves the issue, first deploy using the '--no-promote --no-stop-previous-version' flags and then wait for a few minutes before directing traffic to the new deployment.
+We use the following bash script to effect this.
 Note that this script is used as part of our [circleci](https://circleci.com) deployment configuration and so it contains references to circlci template parameters e.g. '<< parameters.gcp_project_id >>' but it should be clear that these can be replaced with bash command-line arguments:
 
 ```shell
