@@ -16,6 +16,12 @@ Wrapper script to add support for DML database migrations to [migrate](https://g
 
 - [Spanner Database DML Migrations](https://github.com/localcover/public/tree/master/spanner-migrations/README.md)
 
+## Google AppEngine Flex Tricks
+
+Various Google AppEngine Flex tricks.
+
+- [Google AppEngine Flex Tricks](https://github.com/localcover/public/tree/master/gae-flex-tricks/README.md)
+
 ## Contributors
 
 Contributors in alphabetical order are Jordan Felix, Cai Gwatkin, Rick Lee, Ling Liang, Parker Lin, Tom Wang, Steven Zhang, Yixin Zhang et al.
