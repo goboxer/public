@@ -2,7 +2,8 @@
 
 ## Deployment Robustness
 
-In order to work around this [Known Issues in the App Engine Flexible Environment](https://cloud.google.com/appengine/docs/flexible/known-issues) and avoid random HTTP 503 errors for the first few minutes after a deployment we use the following bash script. Note that this script is used as part of our [circleci](https://circleci.com) deployment configuration and so it contains references to circlci template parameters e.g. '<< parameters.gcp_project_id >>' but it should be clear that these can be replaced quiet easily with bash command-line arguments:
+In order to work around [Known Issues in the App Engine Flexible Environment](https://cloud.google.com/appengine/docs/flexible/known-issues) and avoid random HTTP 503 errors for the first few minutes after a deployment we use the following bash script.
+Note that this script is used as part of our [circleci](https://circleci.com) deployment configuration and so it contains references to circlci template parameters e.g. '<< parameters.gcp_project_id >>' but it should be clear that these can be replaced with bash command-line arguments:
 
 ```shell
 # Exit script if you try to use an uninitialized variable.
