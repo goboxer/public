@@ -16,11 +16,11 @@ Wrapper script to add support for DML database migrations to [migrate](https://g
 
 - [Spanner Database DML Migrations](https://github.com/localcover/public/tree/master/spanner-migrations/README.md)
 
-## Google AppEngine Flex Tricks
+## Google AppEngine Flexible Tricks
 
-Various Google AppEngine Flex tricks.
+Various Google AppEngine Flexible tricks.
 
-- [Google AppEngine Flex Tricks](https://github.com/localcover/public/tree/master/gae-flex-tricks/README.md)
+- [Google AppEngine Flexible Tricks](https://github.com/localcover/public/tree/master/gae-flexible-tricks/README.md)
 
 ## Contributors
 

@@ -1,4 +1,4 @@
-# Google AppEngine Flex Tricks
+# Google AppEngine Flexible Tricks
 
 ## Deployment Robustness
 
