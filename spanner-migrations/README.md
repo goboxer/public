@@ -25,11 +25,11 @@ Note that there can only be one DML file for a revision for each environment.
 ```shell
 gcloud config configurations activate [CONFIGURATION_NAME]
 
-gcloud spanner databases create [SPANNER_DATABASE_ID] --instance=[SPANNER INSTANCE ID]
+gcloud spanner databases create [SPANNER_DATABASE_ID] --instance=[SPANNER_INSTANCE_ID]
 
 # DDL and DML
-./migrate.sh [ENV] [GCP_PROJECT_ID] [SPANNER INSTANCE ID] [SPANNER_DATABASE_ID]
+./migrate.sh [ENV] [GCP_PROJECT_ID] [SPANNER_INSTANCE_ID] [SPANNER_DATABASE_ID]
 
 # DDL only
-migrate -path . -database spanner://projects/[GCP_PROJECT_ID]/instances/[SPANNER INSTANCE ID]/databases/[SPANNER_DATABASE_ID] up
+migrate -path . -database spanner://projects/[GCP_PROJECT_ID]/instances/[SPANNER_INSTANCE_ID]/databases/[SPANNER_DATABASE_ID] up
 ```
