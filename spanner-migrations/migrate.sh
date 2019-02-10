@@ -3,24 +3,34 @@
 # This script:
 # -> Applies DDL and DML migrations including resolving tokens in .dml.sql files using their adjacent .json token file
 
-# Exit script if you try to use an uninitialized variable.
-set -o nounset
+fn_exit_on_error ()
+{
+  # Exit script if you try to use an uninitialized variable.
+  set -o nounset
 
-# Exit script if a statement returns a non-true return value.
-set -o errexit
+  # Exit script if a statement returns a non-true return value.
+  set -o errexit
 
-# Use the error status of the first failure, rather than that of the last item in a pipeline.
-set -o pipefail
+  # Use the error status of the first failure, rather than that of the last item in a pipeline.
+  set -o pipefail
+}
+
+fn_exit_on_error_off ()
+{
+  set +o nounset
+  set +o errexit
+  set +o pipefail
+}
 
 log ()
 {
-  set +o nounset
+  fn_exit_on_error_off
   if [ "${TEST_MODE}" == true ]; then
     echo "${SCRIPT_NAME} -> TEST MODE -> ${1}"
   else
     echo "${SCRIPT_NAME} -> ${1}"
   fi
-  set -o nounset
+  fn_exit_on_error
 }
 
 on_exit ()
@@ -40,6 +50,8 @@ exit_with_code ()
   log "END `date '+%Y-%m-%d %H:%M:%S'`"
   exit ${1}
 }
+
+fn_exit_on_error
 
 SCRIPT_DIR="$( cd "$(dirname "${0}")" ; pwd -P )"
 SCRIPT_DIR_NAME=${SCRIPT_DIR##*/}
@@ -91,6 +103,31 @@ log "SPANNER_DATABASE_ID=${SPANNER_DATABASE_ID}"
 echo
 
 # -> FUNCTIONS ----------------------------------------
+fn_create_dml_table_if_necessary ()
+{
+  echo
+  log "ENTER fn_create_dml_table_if_necessary..."
+
+  if [ "${TEST_MODE}" == true ]; then
+    log "Skipping"
+
+  else
+    fn_exit_on_error_off
+    gcloud spanner databases ddl update ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --ddl="CREATE TABLE DataMigrations (Version INT64 NOT NULL, Dirty BOOL NOT NULL) PRIMARY KEY (Version)" --format=json
+    result_code=$?
+    if [ "${result_code}" -ne 0 ]; then
+      log "PLEASE IGNORE ERROR: DML table already exists, no action required "
+
+    else
+      log "Created DML table"
+    fi
+    fn_exit_on_error
+  fi
+
+  log "LEAVE fn_create_dml_table_if_necessary..."
+  echo
+}
+
 fn_replace_tokens ()
 {
   echo
@@ -218,32 +255,44 @@ fn_last_migration ()
 
   else
     log "Inspecting table SchemaMigrations for last revision"
-    LAST_MIGRATION_DDL=$(gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="SELECT Version from SchemaMigrations" | awk 'END{print $NF}')
+    fn_exit_on_error_off
+    SELECT_LAST_MIGRATION_DDL=$(gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="SELECT Version from SchemaMigrations" --format=json)
+    fn_exit_on_error
+    echo "SELECT_LAST_MIGRATION_DDL=${SELECT_LAST_MIGRATION_DDL}"
+    LAST_MIGRATION_DDL=$(echo ${SELECT_LAST_MIGRATION_DDL} | jq -r '.rows | .[0] | .[0]')
+    echo "LAST_MIGRATION_DDL=${LAST_MIGRATION_DDL}"
+
     if [ -z "${LAST_MIGRATION_DDL}" ]; then
-      log "DDL migration tracking table does not exist, PLEASE IGNORE ERROR, table will be created if necessary"
+      log "PLEASE IGNORE ERROR: DDL migration tracking table does not exist, table will be created if necessary"
     else
       log "DDL migration tracking table exists"
     fi
 
     log "Inspecting table DataMigrations for last revision"
-    LAST_MIGRATION_DML=$(gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="SELECT Version from DataMigrations" | awk 'END{print $NF}')
+    fn_exit_on_error_off
+    SELECT_LAST_MIGRATION_DML=$(gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="SELECT Version from DataMigrations" --format=json)
+    fn_exit_on_error
+    echo "SELECT_LAST_MIGRATION_DML=${SELECT_LAST_MIGRATION_DML}"
+    LAST_MIGRATION_DML=$(echo ${SELECT_LAST_MIGRATION_DML} | jq -r '.rows | .[0] | .[0]')
+    echo "LAST_MIGRATION_DML=${LAST_MIGRATION_DML}"
+
     if [ -z "${LAST_MIGRATION_DML}" ]; then
-      log "DML migration tracking table does not exist, PLEASE IGNORE ERROR, table will be created if necessary"
+      log "PLEASE IGNORE ERROR: DML migration tracking table does not exist, table will be created if necessary"
     else
       log "DML migration tracking table exists"
     fi
   fi
 
-  set +o nounset
-  if [ -z "${LAST_MIGRATION_DDL}" ]; then
+  fn_exit_on_error_off
+  if [ -z "${LAST_MIGRATION_DDL}" -o "${LAST_MIGRATION_DDL}" == "null" ]; then
     log "No DDL migrations applied"
     LAST_MIGRATION_DDL=0
   fi
-  if [ -z "${LAST_MIGRATION_DML}" ]; then
+  if [ -z "${LAST_MIGRATION_DML}" -o "${LAST_MIGRATION_DML}" == "null" ]; then
     log "No DML migrations applied"
     LAST_MIGRATION_DML=0
   fi
-  set -o nounset
+  fn_exit_on_error
 
   log "LAST_MIGRATION_DDL=${LAST_MIGRATION_DDL}"
   log "LAST_MIGRATION_DML=${LAST_MIGRATION_DML}"
@@ -264,6 +313,7 @@ fn_outstanding_migrations ()
   echo
   log "ENTER fn_outstanding_migrations..."
 
+  HAS_OUTSTANDING_DML_MIGRATIONS=false
   OUTSTANDING_MIGRATIONS=""
   OUTSTANDING_MIGRATIONS_COUNT=0
 
@@ -286,6 +336,7 @@ fn_outstanding_migrations ()
     if [ ${n} -gt ${LAST_MIGRATION} ]; then
       OUTSTANDING_MIGRATIONS+="${i} "
       OUTSTANDING_MIGRATIONS_COUNT=$((OUTSTANDING_MIGRATIONS_COUNT+1))
+      HAS_OUTSTANDING_DML_MIGRATIONS=true
     fi
   done
 
@@ -354,23 +405,26 @@ fn_apply_dml ()
     done < "${1}.tmp.tmp"
     rm -f "${1}.tmp" "${1}.tmp.tmp"
   else
+    log "Setting revision ${2} as dirty in DataMigrations for pending DML migration ${1}"
+    gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="INSERT INTO DataMigrations (Version, Dirty) VALUES (${2}, true)" --format=json
+
     awk '{printf "%s ",$0} END {print ""}' "${1}" | awk -F';' '{$1=$1}1' OFS=';\n' > "${1}.tmp"
     while IFS= read -r line; do
       if [[ -z "${line// }" ]]; then
         log "  Skipping empty line..."
       else
         log "  Running: ${line}"
-        gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="${line}"
+        gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="${line}" --format=json
       fi
     done < "${1}.tmp"
     rm -f "${1}.tmp"
 
-    log "Setting revision ${2} in DataMigrations for completed DML migration ${1}"
-    gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="INSERT INTO DataMigrations (Version) VALUES (${2})"
+    log "Setting revision ${2} in DataMigrations as NOT dirty for completed DML migration ${1}"
+    gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="UPDATE DataMigrations SET Dirty=false WHERE Version=${2}" --format=json
 
     if [ ${LAST_MIGRATION_DML} -gt 0 ]; then
       log "Removing revision ${LAST_MIGRATION_DML} in DataMigrations for superseded DML migration"
-      gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="DELETE FROM DataMigrations WHERE Version=${LAST_MIGRATION_DML}"
+      gcloud spanner databases execute-sql ${SPANNER_DATABASE_ID} --instance=${SPANNER_INSTANCE_ID} --sql="DELETE FROM DataMigrations WHERE Version=${LAST_MIGRATION_DML}" --format=json
     else
       log "This is the first DML so there is no superseded DML migration to remove"
     fi
@@ -410,6 +464,7 @@ fn_apply_migrations ()
 }
 # <- FUNCTIONS ----------------------------------------
 
+
 fn_count_migrations
 
 if [ ${MIGRATION_COUNT} -eq 0 ]; then
@@ -426,6 +481,11 @@ fi
 fn_last_migration
 
 fn_outstanding_migrations
+
+if [ "${HAS_OUTSTANDING_DML_MIGRATIONS}" = true ]; then
+  log "Outstanding DML migrations available so will now make sure the DML table has been created"
+  fn_create_dml_table_if_necessary
+fi
 
 if [ ${OUTSTANDING_MIGRATIONS_COUNT} -eq 0 ]; then
   log "No migrations needed"

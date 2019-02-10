@@ -27,14 +27,14 @@ echo "Deployed container to GAE"
 ls -al
 cat gcloud-app-deploy.log
 
-export DEPLOYMENT_WAIT_TIME=180
+DEPLOYMENT_WAIT_TIME=180
 echo "Waiting for '${DEPLOYMENT_WAIT_TIME}' seconds for GAE deployment to become available see https://cloud.google.com/appengine/docs/flexible/known-issues"
 sleep ${DEPLOYMENT_WAIT_TIME}
 echo "Finished waiting for GAE deployment to become available"
 # <----------
 
 # >---------- PROMOTING
-export GAE_DEPLOYED_VERSION=$(jq -r '.versions | .[0] | .id' gcloud-app-deploy.log)
+GAE_DEPLOYED_VERSION=$(jq -r '.versions | .[0] | .id' gcloud-app-deploy.log)
 echo "Promoting GAE version '${GAE_DEPLOYED_VERSION}'..."
 gcloud app services set-traffic ${CIRCLE_PROJECT_REPONAME} --splits ${GAE_DEPLOYED_VERSION}=1 --quiet
 echo "Promoted GAE version '${GAE_DEPLOYED_VERSION}''"
@@ -48,10 +48,10 @@ echo "Listed GAE redundant versions that can be stopped"
 ls -al
 cat gcloud-app-services-list.log
 
-export GAE_REDUNDANT_SERVING_VERSIONS=$(jq '.[0] | .versions | .[] | {id: .id, date: .last_deployed_time.datetime, servingStatus: .version.servingStatus, traffic_split: .traffic_split} | select(.traffic_split | contains(0)) | select(.servingStatus | contains("SERVING"))' gcloud-app-services-list.log)
+GAE_REDUNDANT_SERVING_VERSIONS=$(jq '.[0] | .versions | .[] | {id: .id, date: .last_deployed_time.datetime, servingStatus: .version.servingStatus, traffic_split: .traffic_split} | select(.traffic_split | contains(0)) | select(.servingStatus | contains("SERVING"))' gcloud-app-services-list.log)
 echo "GAE_REDUNDANT_SERVING_VERSIONS=${GAE_REDUNDANT_SERVING_VERSIONS}"
 
-export GAE_REDUNDANT_SERVING_VERSION_IDS=$(echo ${GAE_REDUNDANT_SERVING_VERSIONS} | jq -r '.id')
+GAE_REDUNDANT_SERVING_VERSION_IDS=$(echo ${GAE_REDUNDANT_SERVING_VERSIONS} | jq -r '.id')
 echo "GAE_REDUNDANT_SERVING_VERSION_IDS=${GAE_REDUNDANT_SERVING_VERSION_IDS}"
 
 echo "Stopping GAE redundant running versions with no traffic..."
@@ -71,10 +71,10 @@ else
   ls -al
   cat gcloud-app-services-list.log
 
-  export GAE_REDUNDANT_STOPPED_VERSIONS=$(jq '.[0] | .versions | .[] | {id: .id, date: .last_deployed_time.datetime, servingStatus: .version.servingStatus, traffic_split: .traffic_split} | select(.traffic_split | contains(0)) | select(.servingStatus | contains("STOPPED"))' gcloud-app-services-list.log)
+  GAE_REDUNDANT_STOPPED_VERSIONS=$(jq '.[0] | .versions | .[] | {id: .id, date: .last_deployed_time.datetime, servingStatus: .version.servingStatus, traffic_split: .traffic_split} | select(.traffic_split | contains(0)) | select(.servingStatus | contains("STOPPED"))' gcloud-app-services-list.log)
   echo "GAE_REDUNDANT_STOPPED_VERSIONS=${GAE_REDUNDANT_STOPPED_VERSIONS}"
 
-  export GAE_REDUNDANT_STOPPED_VERSION_IDS=$(echo ${GAE_REDUNDANT_STOPPED_VERSIONS} | jq -r '.id')
+  GAE_REDUNDANT_STOPPED_VERSION_IDS=$(echo ${GAE_REDUNDANT_STOPPED_VERSIONS} | jq -r '.id')
   echo "GAE_REDUNDANT_STOPPED_VERSION_IDS=${GAE_REDUNDANT_STOPPED_VERSION_IDS}"
 
   echo "Deleting GAE redundant stopped versions with no traffic..."
