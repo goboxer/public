@@ -20,14 +20,6 @@ These JSON token definition files are optional but there can only be one per DML
 
 Note that there can only be one DML file for a revision for each environment.
 
-If you want to use DML then the first DDL migration requires at least the following:
-
-```sql
-CREATE TABLE DataMigrations (
-  Version INT64 NOT NULL,
-) PRIMARY KEY (Version);
-```
-
 ## Usage
 
 ```shell
