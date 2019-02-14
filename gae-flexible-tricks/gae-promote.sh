@@ -252,7 +252,7 @@ if [ ${SHOULD_ATTEMPT_CLEANUP} == true ]; then
     done
 
     if [ `echo ${GAE_REDUNDANT_STOPPED_NO_TRAFFIC_VERSION_IDS} | wc -w` -le 1 ]; then
-      log "Skipping delete of previous GAE redundant versions -> There are less than one previous GAE redundant versions to delete i.e. those stopped with no traffic..."
+      log "Skipping delete of previous GAE redundant versions i.e. those stopped with no traffic -> There are less than two previous GAE redundant versions to delete and we want to keep at least one"
 
     else
       log "Sorting previous GAE redundant versions..."
