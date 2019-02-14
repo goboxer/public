@@ -195,7 +195,7 @@ fn_count_migrations ()
       # Apply 'basename' THEN apply 'sort' THEN convert newlines to spaces
       # -> 'sort' must come last
       # -> 'xargs -n 1' because 'basename'/'sort' cannot take more than one item as param
-      MIGRATIONS=$(echo ${MIGRATIONS} | xargs -n1 basename | xargs -n1 | sort -g | xargs)
+      MIGRATIONS=$(echo ${MIGRATIONS} | xargs -n1 basename | xargs -n1 | sort -s | xargs)
   fi
 
   log "MIGRATIONS=${MIGRATIONS}"
@@ -340,7 +340,7 @@ fn_outstanding_migrations ()
     fi
   done
 
-  OUTSTANDING_MIGRATIONS=$(echo ${OUTSTANDING_MIGRATIONS} | tr " " "\n" | sort | tr "\n" " ")
+  OUTSTANDING_MIGRATIONS=$(echo ${OUTSTANDING_MIGRATIONS} | tr " " "\n" | sort -s | tr "\n" " ")
 
   log "OUTSTANDING_MIGRATIONS=${OUTSTANDING_MIGRATIONS}"
   log "OUTSTANDING_MIGRATIONS_COUNT=${OUTSTANDING_MIGRATIONS_COUNT}"
