@@ -81,7 +81,7 @@ log "CIRCLE_PROJECT_REPONAME=${CIRCLE_PROJECT_REPONAME}"
 echo
 
 # -> FUNCTIONS ----------------------------------------
-# Usage: fn_gae_version_as_timestamp <GAE_VERSION_NUMBER> <Name of variable to fill with date>
+# Usage: fn_gae_version_as_timestamp <GAE_VERSION_NUMBER> <Name of variable to fill with timestamp>
 fn_gae_version_as_timestamp ()
 {
   log "Parameter 1 - <GAE_VERSION_NUMBER>=${1}"
