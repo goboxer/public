@@ -216,7 +216,7 @@ if [ ${SHOULD_ATTEMPT_CLEANUP} == true ]; then
   fi
 
   # >---------- CLEANING UP - Deleting PREVIOUS 'STOPPED' versions with no traffic
-  if [ ${ENV} == "dev" ] || [ ${ENV} == "prd" ]; then
+  if [ ${ENV} == "prd" ]; then
     log "Running in environment '${ENV}' and will SKIP the delete of GAE redundant versions that can be deleted i.e. those PRIOR and 'STOPPED' with no traffic..."
 
   else
