@@ -62,7 +62,7 @@ log "ENTER as user ${WHOAMI}..."
 echo
 
 if [ $# -lt 3 ]; then
-  log "Usage: gae-promote ENV GCP_PROJECT_ID CIRCLE_PROJECT_REPONAME"
+  log "Usage: gae-promote.sh ENV GCP_PROJECT_ID CIRCLE_PROJECT_REPONAME"
   exit_with_code 2
 
   else
