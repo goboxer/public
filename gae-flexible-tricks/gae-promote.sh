@@ -84,8 +84,8 @@ echo
 # Usage: fn_gae_version_as_timestamp <GAE_VERSION_NUMBER> <Name of variable to fill with timestamp>
 fn_gae_version_as_timestamp ()
 {
-  log "Parameter 1 - <GAE_VERSION_NUMBER>=${1}"
-  log "Parameter 2 - Variable which will be set to a TIMESTAMP representation of <GAE_VERSION_NUMBER>=${2}"
+  log "Parameter 1 - GAE_VERSION_NUMBER=${1}"
+  log "Parameter 2 - Variable which will be set to a TIMESTAMP representation of GAE_VERSION_NUMBER=${2}"
 
   log "Parsing GAE version '${1}' as date..."
 
