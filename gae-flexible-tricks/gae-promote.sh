@@ -133,7 +133,7 @@ if [ ${ENV} == "prd" ]; then
   # -> It is OK to have 503s errors in dev and uat in order that the client learns to handle them
   # -> In all environments the clean up to stop the previous deployment provides enough time to ensure integration tests will not fail due to 503s
   DEPLOYMENT_WAIT_TIME=180
-  log "Waiting for '${DEPLOYMENT_WAIT_TIME}' seconds for GAE deployment to become available see https://cloud.google.com/appengine/docs/flexible/known-issues"
+  log "Waiting '${DEPLOYMENT_WAIT_TIME}' seconds for GAE deployment to become available see https://cloud.google.com/appengine/docs/flexible/known-issues"
   sleep ${DEPLOYMENT_WAIT_TIME}
   log "Finished waiting for GAE deployment to become available"
 
