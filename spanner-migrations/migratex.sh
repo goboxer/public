@@ -64,7 +64,7 @@ log "ENTER as user ${WHOAMI}..."
 echo
 
 if [ $# -lt 4 ]; then
-  log "Usage: migratex.sh ENV GCP_PROJECT_ID SPANNER_INSTANCE_ID SPANNER_DATABASE_ID"
+  log "Usage: migratex.sh ENV_ID GCP_PROJECT_ID SPANNER_INSTANCE_ID SPANNER_DATABASE_ID"
   exit_with_code 2
 
   else
