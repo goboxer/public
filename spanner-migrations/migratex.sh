@@ -185,7 +185,7 @@ fn_count_migrations ()
   if [ "${TEST_MODE}" == true ]; then
     MIGRATIONS=${TEST_MIGRATIONS}
   else
-    MIGRATIONS=$(find . -name "*.ddl.up.sql" -o -name "*.all.dml.sql" -o -name "*.${ENV}.dml.sql" -o -name "*.${ENV}.*.dml.sql")
+    MIGRATIONS=$(find . -name "*.ddl.up.sql" -o -name "*.all.dml.sql" -o -name "*.${ENV_ID}.dml.sql" -o -name "*.${ENV_ID}.*.dml.sql")
   fi
 
   if [ -z "${MIGRATIONS}" ]; then
