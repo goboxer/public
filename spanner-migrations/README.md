@@ -2,7 +2,11 @@
 
 We use the excellent [migrate](https://github.com/golang-migrate/migrate) tool for Google GCP Spanner database migrations however it does not support DML.
 DML is useful when a new feauture requires some non-transactional data.
-We work around this with a wrapper script which interleaves DML migrations using [Google Cloud SDK](https://cloud.google.com/sdk/install) commands.
+We work around this with a wrapper tool `migratex` which interleaves DML migrations with `migrate's` DDL migrations.
+
+There are two versions of this tool, one is a Bash script and one is a Go program.
+The Bash script was written first and relies on the [Google Cloud SDK](https://cloud.google.com/sdk/install) being installed and up-to-date.
+The Go program replaces the Bash script and is much faster because it uses the [Go Cloud Spanner client library](https://cloud.google.com/spanner/docs/reference/libraries#client-libraries-install-go) and so can cache the Spanner session and leverages things like batch DML processing.
 
 The wrapper script requires the following naming convention for migrations and maintains DML migration revision history in the table 'DataMigrations':
 
@@ -27,9 +31,18 @@ gcloud config configurations activate [CONFIGURATION_NAME]
 
 gcloud spanner databases create [SPANNER_DATABASE_ID] --instance=[SPANNER_INSTANCE_ID]
 
-# DDL and DML
-./migrate.sh [ENV] [GCP_PROJECT_ID] [SPANNER_INSTANCE_ID] [SPANNER_DATABASE_ID]
-
-# DDL only
+# DDL only using 'migrate'
 migrate -path . -database spanner://projects/[GCP_PROJECT_ID]/instances/[SPANNER_INSTANCE_ID]/databases/[SPANNER_DATABASE_ID] up
+
+# DDL and DML using 'migratex' with no dependencies installed
+go mod init migratex
+go build migratex
+chmod +x migratex
+./migratex -env_id=${ENV} -gcp_project_id=${GCP_PROJECT_ID} -spanner_instance_id=${SPANNER_INSTANCE_ID} -spanner_database_id=${SPANNER_DATABASE_ID}
+
+# DDL and DML using 'migratex' with the Go Cloud Spanner client library already installed
+go run migratex.go -env_id=${ENV} -gcp_project_id=${GCP_PROJECT_ID} -spanner_instance_id=${SPANNER_INSTANCE_ID} -spanner_database_id=${SPANNER_DATABASE_ID}
+
+# DDL and DML using the deprecated 'migratex' Bash script
+./migratex.sh [ENV] [GCP_PROJECT_ID] [SPANNER_INSTANCE_ID] [SPANNER_DATABASE_ID]
 ```
