@@ -68,7 +68,7 @@ if [ $# -lt 4 ]; then
   exit_with_code 2
 
   else
-    export ENV=${1}
+    export ENV_ID=${1}
     export GCP_PROJECT_ID=${2}
     export SPANNER_INSTANCE_ID=${3}
     export SPANNER_DATABASE_ID=${4}
@@ -96,7 +96,7 @@ SELECT Version from SchemaMigrations;
 
 echo
 log "TEST_MODE=${TEST_MODE}"
-log "ENV=${ENV}"
+log "ENV_ID=${ENV_ID}"
 log "GCP_PROJECT_ID=${GCP_PROJECT_ID}"
 log "SPANNER_INSTANCE_ID=${SPANNER_INSTANCE_ID}"
 log "SPANNER_DATABASE_ID=${SPANNER_DATABASE_ID}"
