@@ -222,7 +222,7 @@ func applyDmlMigration(ctx context.Context, spannerClient *spanner.Client, dir, 
 		log.Printf("No migration data file %q for DML migration file %q", tf, f)
 
 	} else {
-		fileBytes, err := ioutil.ReadFile(f)
+		fileBytes, err := ioutil.ReadFile(tf)
 		if err != nil {
 			log.Fatalf("Failed reading DML migration data file %q: %v", tf, err)
 		}
@@ -233,7 +233,7 @@ func applyDmlMigration(ctx context.Context, spannerClient *spanner.Client, dir, 
 
 	if len(migrationData) > 0 {
 		for k, v := range migrationData {
-			migrationFileString = strings.ReplaceAll(migrationFileString, k, v)
+			migrationFileString = strings.ReplaceAll(migrationFileString, fmt.Sprintf("@%s@", k), v)
 		}
 	}
 
@@ -295,7 +295,7 @@ func setDataMigrationsDirty(ctx context.Context, spannerClient *spanner.Client, 
 }
 
 func determineLastMigration(ctx context.Context, spannerClient *spanner.Client, migrationTableName string) (bool, int64) {
-	stmt := spanner.Statement{SQL: fmt.Sprintf("SELECT Dirty, Version from %s", migrationTableName)}
+	stmt := spanner.Statement{SQL: fmt.Sprintf("SELECT Dirty, Version FROM %s ORDER BY Version DESC LIMIT 1", migrationTableName)}
 	iter := spannerClient.Single().Query(ctx, stmt)
 	defer iter.Stop()
 	for {
