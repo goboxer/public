@@ -23,7 +23,7 @@ These JSON token definition files are optional but there can only be one per DML
     [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].all.json
 
 Note that there can only be one DML file for a revision for each environment.
-DML migration revision history is maintained in the table 'DataMigrations'.
+Note that DML migration revision history is maintained in the table `DataMigrations`.
 
 ## Usage
 
