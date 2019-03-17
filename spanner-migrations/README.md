@@ -8,15 +8,17 @@ There are two versions of this tool, one is a Bash script and one is a Go progra
 The Bash script [migratex.sh](https://github.com/localcover/public/blob/master/spanner-migrations/migratex.sh) was written first and relies on the [Google Cloud SDK](https://cloud.google.com/sdk/install) being installed and up-to-date.
 The Go program [migratex.go](https://github.com/localcover/public/blob/master/spanner-migrations/migratex.go) replaces the Bash script and is much faster because it uses the [Go Cloud Spanner client library](https://cloud.google.com/spanner/docs/reference/libraries#client-libraries-install-go) and so can cache the Spanner session and leverage things like batch DML processing.
 
-`migratex` requires the following naming convention for migrations where `_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE]` can be anything and `REVISION` must be an integer, optionally prefixed by zeros:
+`migratex` requires a naming convention to recognize migrations.
+In the following examples `_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE]` can be anything, `[REVISION]` must be an integer, optionally prefixed by zeros and [ENV_ID] is and environment ID for which the migrations should be applied.
+The environment ID is passed to `migratex` at runtime:
 
     [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].ddl.up.sql
     [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].dml.sql
     [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].[ENV_ID].dml.sql
     [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].all.dml.sql
 
-DML can contain tokens and if so the tokens will be resolved if a JSON token definition files exists.
-These JSON token definition files are optional but there can only be one per DML file:
+DML can contain tokens and if so the tokens will be resolved if a JSON token definition file exists.
+JSON token definition files are optional but there can only be one per DML file:
 
     [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].json
     [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].[ENV_ID].json
