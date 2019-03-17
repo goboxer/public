@@ -9,7 +9,7 @@ The Bash script [migratex.sh](https://github.com/localcover/public/blob/master/s
 The Go program [migratex.go](https://github.com/localcover/public/blob/master/spanner-migrations/migratex.go) replaces the Bash script and is much faster because it uses the [Go Cloud Spanner client library](https://cloud.google.com/spanner/docs/reference/libraries#client-libraries-install-go) and so can cache the Spanner session and leverage things like batch DML processing.
 
 `migratex` requires a naming convention to recognize migrations.
-In the following examples `_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE]` can be anything, `[REVISION]` must be an integer, optionally prefixed by zeros and [ENV_ID] is and environment ID for which the migrations should be applied.
+In the following examples `_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE]` can be anything, `[REVISION]` must be an integer, optionally prefixed by zeros, and [ENV_ID] is and environment ID for which the migrations should be applied.
 The environment ID is passed to `migratex` at runtime:
 
     [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].ddl.up.sql
