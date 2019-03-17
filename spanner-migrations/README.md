@@ -20,9 +20,9 @@ The environment ID is passed to `migratex` at runtime:
 DML can contain tokens and if so the tokens will be resolved if a JSON token definition file exists.
 JSON token definition files are optional but there can only be one per DML file:
 
-    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].json
-    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].[ENV_ID].json
-    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].all.json
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].dml.json
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].[ENV_ID].dml.json
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].all.dml.json
 
 Note that there can only be one DML file for a revision for each environment.
 Note that DML migration revision history is maintained in the table `DataMigrations`.
