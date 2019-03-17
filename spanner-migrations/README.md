@@ -41,10 +41,10 @@ migrate -path . -database spanner://projects/[GCP_PROJECT_ID]/instances/[SPANNER
 go mod init migratex
 go build migratex
 chmod +x migratex
-./migratex -env_id=$[ENV_ID] -gcp_project_id=[GCP_PROJECT_ID] -spanner_instance_id=[SPANNER_INSTANCE_ID] -spanner_database_id=[SPANNER_DATABASE_ID]
+./migratex -env_id=[ENV_ID] -gcp_project_id=[GCP_PROJECT_ID] -spanner_instance_id=[SPANNER_INSTANCE_ID] -spanner_database_id=[SPANNER_DATABASE_ID]
 
 # DDL and DML using 'migratex' with the Go Cloud Spanner client library already installed
-go run migratex.go -env_id=$[ENV_ID] -gcp_project_id=[GCP_PROJECT_ID] -spanner_instance_id=[SPANNER_INSTANCE_ID] -spanner_database_id=[SPANNER_DATABASE_ID]
+go run migratex.go -env_id=[ENV_ID] -gcp_project_id=[GCP_PROJECT_ID] -spanner_instance_id=[SPANNER_INSTANCE_ID] -spanner_database_id=[SPANNER_DATABASE_ID]
 
 # DDL and DML using the deprecated 'migratex' Bash script
 ./migratex.sh [ENV_ID] [GCP_PROJECT_ID] [SPANNER_INSTANCE_ID] [SPANNER_DATABASE_ID]
