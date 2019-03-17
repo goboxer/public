@@ -8,19 +8,19 @@ There are two versions of this tool, one is a Bash script and one is a Go progra
 The Bash script [migratex.sh](https://github.com/localcover/public/blob/master/spanner-migrations/migratex.sh) was written first and relies on the [Google Cloud SDK](https://cloud.google.com/sdk/install) being installed and up-to-date.
 The Go program [migratex.go](https://github.com/localcover/public/blob/master/spanner-migrations/migratex.go) replaces the Bash script and is much faster because it uses the [Go Cloud Spanner client library](https://cloud.google.com/spanner/docs/reference/libraries#client-libraries-install-go) and so can cache the Spanner session and leverage things like batch DML processing.
 
-`migratex` requires the following naming convention for migrations and maintains DML migration revision history in the table 'DataMigrations':
+`migratex` requires the following naming convention for migrations where `_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE]` can be anything. DML migration revision history is maintained in the table 'DataMigrations':
 
-    [REVISION]_[domain]_[FEATURE].ddl.up.sql
-    [REVISION]_[domain]_[FEATURE].[ENV_ID].dml.sql
-    [REVISION]_[domain]_[FEATURE].[ENV_ID].[ENV_ID].dml.sql
-    [REVISION]_[domain]_[FEATURE].all.dml.sql
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].ddl.up.sql
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].dml.sql
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].[ENV_ID].dml.sql
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].all.dml.sql
 
 DML can contain tokens and if so the tokens will be resolved if a JSON token definition files exists.
 These JSON token definition files are optional but there can only be one per DML file:
 
-    [REVISION]_[domain]_[FEATURE].[ENV_ID].json
-    [REVISION]_[domain]_[FEATURE].[ENV_ID].[ENV_ID].json
-    [REVISION]_[domain]_[FEATURE].all.json
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].json
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].[ENV_ID].[ENV_ID].json
+    [REVISION]_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE].all.json
 
 Note that there can only be one DML file for a revision for each environment.
 
