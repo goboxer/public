@@ -205,8 +205,6 @@ func determineMigrations(dir string) (ddl []string, dml []string) {
 }
 
 func applyAllDdlMigrations(dir string) {
-	logInfo(fmt.Sprintf("Applying all DDL migrations..."))
-
 	cmd := exec.Command("migrate", "-path", dir, "-database", fmt.Sprintf("spanner://projects/%s/instances/%s/databases/%s", gcpProjectId, spannerInstanceId, spannerDatabaseId), "up")
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
@@ -220,8 +218,6 @@ func applyAllDdlMigrations(dir string) {
 }
 
 func applyNextDdlMigration(dir string) {
-	logInfo(fmt.Sprintf("Applying next DDL migration..."))
-
 	cmd := exec.Command("migrate", "-path", dir, "-database", fmt.Sprintf("spanner://projects/%s/instances/%s/databases/%s", gcpProjectId, spannerInstanceId, spannerDatabaseId), "up", "1")
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
@@ -293,7 +289,7 @@ func outstandingMigrations(availableDdlMigrations, availableDmlMigrations []stri
 }
 
 func createMigrationTableIfNecessary(ctx context.Context, spannerAdminClient *database.DatabaseAdminClient, databseConnection, migrationTableName string) {
-	logInfo(fmt.Sprintf("If necessary the %q table will be created", migrationTableName))
+	logInfo(fmt.Sprintf("Creating table %q if necessary...", migrationTableName))
 
 	op, err := spannerAdminClient.UpdateDatabaseDdl(ctx, &adminpb.UpdateDatabaseDdlRequest{
 		Database: databseConnection,
@@ -312,7 +308,6 @@ func createMigrationTableIfNecessary(ctx context.Context, spannerAdminClient *da
 		}
 		logFatal(fmt.Sprintf("Failed creating the %q table after waiting: %v", migrationTableName, err))
 	}
-	logInfo(fmt.Sprintf("If necessary the %q table has been created", migrationTableName))
 }
 
 func applyAllMigrations(ctx context.Context, spannerClient *spanner.Client, dir string, currentDmlMigrationVersion int64, outstandingDdlMigrations, outstandingDmlMigrations []string) {
@@ -396,30 +391,38 @@ func applyDmlMigration(ctx context.Context, spannerClient *spanner.Client, dir s
 			"version": nextDmlMigrationVersion,
 		},
 	})
-	statements = append(statements, spanner.Statement{
-		SQL: "DELETE FROM DataMigrations WHERE Version=@version",
-		Params: map[string]interface{}{
-			"version": currentDmlMigrationVersion,
-		},
-	})
+
+	if currentDmlMigrationVersion > 0 {
+		logInfo(fmt.Sprintf("Prior DML migration version '%d' will be deleted from DML migration tracking table 'DataMigrations'", currentDmlMigrationVersion))
+		statements = append(statements, spanner.Statement{
+			SQL: "DELETE FROM DataMigrations WHERE Version=@version",
+			Params: map[string]interface{}{
+				"version": currentDmlMigrationVersion,
+			},
+		})
+	} else {
+		logInfo("No prior DML migration versions need to be deleted from DML migration tracking table 'DataMigrations'")
+	}
+
 	applyDmlStatements(ctx, spannerClient, currentDmlMigrationVersion, nextDmlMigrationVersion, statements)
 
 	return nextDmlMigrationVersion
 }
 
 func applyDmlStatements(ctx context.Context, spannerClient *spanner.Client, currentDmlMigrationVersion, nextDmlMigrationVersion int64, statements []spanner.Statement) {
-	logInfo(fmt.Sprintf("Applying DML migration from version '%d' to version '%d': %v", currentDmlMigrationVersion, nextDmlMigrationVersion, statements))
+
+	logInfo(fmt.Sprintf("Applying DML migrations from version '%d' to version '%d': %v", currentDmlMigrationVersion, nextDmlMigrationVersion, statements))
 
 	_, err := spannerClient.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
 		rowCounts, err := txn.BatchUpdate(ctx, statements)
 		if err != nil {
 			return err
 		}
-		logInfo(fmt.Sprintf("Applied DML migration from version '%d' to version '%d'. Updated row counts '%d'", currentDmlMigrationVersion, nextDmlMigrationVersion, rowCounts))
+		logInfo(fmt.Sprintf("Applied DML migrations from version '%d' to version '%d'. Updated row counts '%d'", currentDmlMigrationVersion, nextDmlMigrationVersion, rowCounts))
 		return nil
 	})
 	if err != nil {
-		logFatal(fmt.Sprintf("Failed applying DML from version '%d' to version '%d': %v", currentDmlMigrationVersion, nextDmlMigrationVersion, err))
+		logFatal(fmt.Sprintf("Failed applying DML migrations from version '%d' to version '%d': %v", currentDmlMigrationVersion, nextDmlMigrationVersion, err))
 	}
 }
 
