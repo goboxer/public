@@ -122,7 +122,7 @@ fn_gae_version_as_timestamp ()
 echo
 log "Deploying container to GAE..."
 # DO NOT ADD flags '--verbosity=debug --log-http' to this command, it will break 'jq' processing of the resulting deployment metadata captured in 'gcloud-app-deploy.log'
-gcloud app deploy --bucket gs://${GCP_PROJECT_ID}-lc-api-stage-appengine --no-promote --no-stop-previous-version --format=json --quiet > gcloud-app-deploy.log
+gcloud --project=${GCP_PROJECT_ID} app deploy --bucket gs://${GCP_PROJECT_ID}-svc-stage-gae --no-promote --no-stop-previous-version --format=json --quiet > gcloud-app-deploy.log
 log "Deployed container to GAE"
 
 ls -al
@@ -146,7 +146,7 @@ fi
 echo
 GAE_DEPLOYED_VERSION=$(jq -r '.versions | .[0] | .id' gcloud-app-deploy.log)
 log "Promoting GAE version '${GAE_DEPLOYED_VERSION}'..."
-gcloud app services set-traffic ${CIRCLE_PROJECT_REPONAME} --splits ${GAE_DEPLOYED_VERSION}=1 --quiet
+gcloud --project=${GCP_PROJECT_ID} app services set-traffic ${CIRCLE_PROJECT_REPONAME} --splits ${GAE_DEPLOYED_VERSION}=1 --quiet
 log "Promoted GAE version '${GAE_DEPLOYED_VERSION}'"
 # <----------
 
@@ -175,7 +175,7 @@ if [ ${SHOULD_ATTEMPT_CLEANUP} == true ]; then
   log "Looking for previous GAE redundant versions to stop i.e. those running with no traffic..."
 
   log "Listing GAE versions..."
-  gcloud app services list --filter="${CIRCLE_PROJECT_REPONAME}" --format=json > gcloud-app-services-list.log
+  gcloud --project=${GCP_PROJECT_ID} app services list --filter="${CIRCLE_PROJECT_REPONAME}" --format=json > gcloud-app-services-list.log
   log "Listed GAE versions"
 
   ls -al
@@ -211,7 +211,7 @@ if [ ${SHOULD_ATTEMPT_CLEANUP} == true ]; then
 
   else
     log "Stopping previous GAE redundant versions i.e. those running with no traffic..."
-    gcloud app versions stop --service ${CIRCLE_PROJECT_REPONAME} ${GAE_REDUNDANT_SERVING_NO_TRAFFIC_VERSION_IDS} --quiet
+    gcloud --project=${GCP_PROJECT_ID} app versions stop --service ${CIRCLE_PROJECT_REPONAME} ${GAE_REDUNDANT_SERVING_NO_TRAFFIC_VERSION_IDS} --quiet
     log "Stopped previous GAE redundant versions i.e. those running with no traffic"
   fi
 
@@ -224,7 +224,7 @@ if [ ${SHOULD_ATTEMPT_CLEANUP} == true ]; then
     log "Looking for previous GAE redundant versions to delete i.e. those stopped with no traffic..."
 
     log "Listing GAE versions..."
-    gcloud app services list --filter="${CIRCLE_PROJECT_REPONAME}" --format=json > gcloud-app-services-list.log
+    gcloud --project=${GCP_PROJECT_ID} app services list --filter="${CIRCLE_PROJECT_REPONAME}" --format=json > gcloud-app-services-list.log
     log "Listed GAE versions"
 
     GAE_STOPPED_NO_TRAFFIC_VERSIONS=$(jq '.[0] | .versions | .[] | {id: .id, date: .last_deployed_time.datetime, servingStatus: .version.servingStatus, traffic_split: .traffic_split} | select(.traffic_split | contains(0)) | select(.servingStatus | contains("STOPPED"))' gcloud-app-services-list.log)
@@ -264,7 +264,7 @@ if [ ${SHOULD_ATTEMPT_CLEANUP} == true ]; then
       log "SPLIT_GAE_REDUNDANT_STOPPED_NO_TRAFFIC_VERSION_IDS=${SPLIT_GAE_REDUNDANT_STOPPED_NO_TRAFFIC_VERSION_IDS}"
 
       log "Deleting all except the latest previous GAE redundant versions i.e. those stopped with no traffic..."
-      gcloud app versions delete --service ${CIRCLE_PROJECT_REPONAME} ${SPLIT_GAE_REDUNDANT_STOPPED_NO_TRAFFIC_VERSION_IDS} --quiet
+      gcloud --project=${GCP_PROJECT_ID} app versions delete --service ${CIRCLE_PROJECT_REPONAME} ${SPLIT_GAE_REDUNDANT_STOPPED_NO_TRAFFIC_VERSION_IDS} --quiet
       log "Deleted all except the latest previous GAE redundant versions i.e. those stopped with no traffic"
     fi
   fi
