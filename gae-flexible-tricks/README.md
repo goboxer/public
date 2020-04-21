@@ -6,4 +6,4 @@ When using the simply AppEngine deployment command there is an issue in the Flex
 
 However AppEngine supports two stage deployments which solves the issue, first deploy using the '--no-promote --no-stop-previous-version' flags and then wait for a few minutes before directing traffic to the new deployment.
 
-We use the Bash script [gae-promote.sh](https://github.com/localcover/public/blob/master/gae-flexible-tricks/gae-promote.sh) to implement this. If you want to run this script on a mac then install `gdate` with 'brew install gdate' and swap 'date' with 'gdate' in the script.
+We use the Bash script [gae-promote.sh](https://github.com/localcover/public/blob/master/gae-flexible-tricks/gae-promote.sh) to implement this. If you want to run this script on a mac then install `gdate` with 'brew install coreutils' and swap 'date' with 'gdate' in the script.
