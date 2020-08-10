@@ -205,7 +205,7 @@ func determineMigrations(dir string) (ddl []string, dml []string) {
 }
 
 func applyAllDdlMigrations(dir string) {
-	cmd := exec.Command("migrate", "-path", dir, "-database", fmt.Sprintf("spanner://projects/%s/instances/%s/databases/%s", gcpProjectId, spannerInstanceId, spannerDatabaseId), "up")
+	cmd := exec.Command("migrate", "-path", dir, "-database", fmt.Sprintf("spanner://projects/%s/instances/%s/databases/%s?x-clean-statements=true", gcpProjectId, spannerInstanceId, spannerDatabaseId), "up")
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
@@ -218,7 +218,7 @@ func applyAllDdlMigrations(dir string) {
 }
 
 func applyNextDdlMigration(dir string) {
-	cmd := exec.Command("migrate", "-path", dir, "-database", fmt.Sprintf("spanner://projects/%s/instances/%s/databases/%s", gcpProjectId, spannerInstanceId, spannerDatabaseId), "up", "1")
+	cmd := exec.Command("migrate", "-path", dir, "-database", fmt.Sprintf("spanner://projects/%s/instances/%s/databases/%s?x-clean-statements=true", gcpProjectId, spannerInstanceId, spannerDatabaseId), "up", "1")
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
@@ -463,7 +463,8 @@ func newSpannerClient(ctx context.Context, databseConnection string) (*spanner.C
 		runtimeLabel = os.Getenv("USER")
 	}
 
-	minOpenedSessions := 1
+	minOpenedSessions := 2
+	writeSessions := .5
 	sessionId := strings.ToLower(pseudoUuid())
 	sessionLocation := runtimeLabel
 
@@ -471,7 +472,8 @@ func newSpannerClient(ctx context.Context, databseConnection string) (*spanner.C
 	// -> spanner: code = "InvalidArgument", desc = "Invalid CreateSession request."
 	spannerClientConfig := spanner.ClientConfig{
 		SessionPoolConfig: spanner.SessionPoolConfig{
-			MinOpened: uint64(minOpenedSessions),
+			MinOpened:     uint64(minOpenedSessions),
+			WriteSessions: writeSessions,
 		},
 		SessionLabels: map[string]string{
 			"id":       sessionId,
