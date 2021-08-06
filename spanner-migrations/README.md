@@ -1,8 +1,6 @@
 # Spanner Migrations
 
-We use the excellent [migrate](https://github.com/golang-migrate/migrate) tool for Google GCP Spanner database migrations however it does not support DML.
-DML is useful when a new feauture requires some non-transactional data.
-We work around this with a wrapper tool `migratex` which interleaves DML migrations with `migrate's` DDL migrations.
+This tool is deprecated. See [github.com/localcover/public-migratex](https://github.com/localcover/public-migratex) for its replacement.
 
 There are two versions of this tool, one is a Bash script and one is a Go program.
 The Bash script [migratex.sh](https://github.com/localcover/public/blob/master/spanner-migrations/migratex.sh) was written first and relies on the [Google Cloud SDK](https://cloud.google.com/sdk/install) being installed and up-to-date.
