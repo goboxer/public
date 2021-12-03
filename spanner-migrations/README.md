@@ -1,10 +1,10 @@
 # Spanner Migrations
 
-This tool is deprecated. See [github.com/localcover/public-migratex](https://github.com/localcover/public-migratex) for its replacement.
+This tool is deprecated. See [github.com/goboxer/public-migratex](https://github.com/goboxer/public-migratex) for its replacement.
 
 There are two versions of this tool, one is a Bash script and one is a Go program.
-The Bash script [migratex.sh](https://github.com/localcover/public/blob/master/spanner-migrations/migratex.sh) was written first and relies on the [Google Cloud SDK](https://cloud.google.com/sdk/install) being installed and up-to-date.
-The Go program [migratex.go](https://github.com/localcover/public/blob/master/spanner-migrations/migratex.go) replaces the Bash script and is much faster because it uses the [Go Cloud Spanner client library](https://cloud.google.com/spanner/docs/reference/libraries#client-libraries-install-go) and so can cache the Spanner session and leverage things like batch DML processing.
+The Bash script [migratex.sh](https://github.com/goboxer/public/blob/master/spanner-migrations/migratex.sh) was written first and relies on the [Google Cloud SDK](https://cloud.google.com/sdk/install) being installed and up-to-date.
+The Go program [migratex.go](https://github.com/goboxer/public/blob/master/spanner-migrations/migratex.go) replaces the Bash script and is much faster because it uses the [Go Cloud Spanner client library](https://cloud.google.com/spanner/docs/reference/libraries#client-libraries-install-go) and so can cache the Spanner session and leverage things like batch DML processing.
 
 `migratex` requires a naming convention to recognize migrations.
 In the following examples `_[SOME_BUINSESS_DOMAIN]_[SOME_FEATURE]` can be anything, `[REVISION]` must be an integer, optionally prefixed by zeros, and `[ENV_ID]` is and environment ID for which the migrations should be applied.
